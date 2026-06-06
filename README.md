@@ -12,7 +12,9 @@ The bottleneck in agentic software isn't capability — it's **trust**. A model 
 
 It's deliberately slower. That's the trade: overhead you choose to pay so the work holds up in production, not just in the demo. The discipline is borrowed from reliability engineering in marine and biotech — FMEA, RCM, poka-yoke — ported onto AI.
 
-**▶ Intro deck:** [stchiotis.github.io/Claude-LFE.intro](https://stchiotis.github.io/Claude-LFE.intro/) · built on the [Library-First Engineering](https://github.com/StChiotis/Library-First-Engineering) framework.
+Built on the [Library-First Engineering](https://github.com/StChiotis/Library-First-Engineering) framework.
+
+[![Intro deck](docs/intro.gif)](https://stchiotis.github.io/Claude-LFE.intro/)
 
 ---
 
