@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "Claude-LFE — Library-First Engineering for Claude Code"
+message: "If you use Claude-LFE or build on Library-First Engineering, please cite it."
+type: software
+authors:
+  - given-names: Stylianos
+    family-names: Chiotis
+repository-code: "https://github.com/StChiotis/Claude-LFE"
+url: "https://stchiotis.github.io/Claude-LFE.intro/"
+abstract: >-
+  A ready-to-clone Claude Code project scaffold built on Library-First
+  Engineering: a discipline that keeps agentic AI reliable across sessions by
+  keeping the human on the wheel, treating documentation as the source of
+  truth, and mechanically enforcing and measuring reliability.
+keywords:
+  - claude-code
+  - library-first-engineering
+  - agentic-ai
+  - ai-reliability
+  - llm
+license: MIT
+version: 1.0.0
+date-released: "2026-06-06"

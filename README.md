@@ -1,8 +1,18 @@
-﻿# Claude-LFE
+# Claude-LFE
 
-**Claude-native Library-First Engineering template.**
+[![CI](https://github.com/StChiotis/Claude-LFE/actions/workflows/ci.yml/badge.svg)](https://github.com/StChiotis/Claude-LFE/actions/workflows/ci.yml)
+[![tests](https://img.shields.io/badge/tests-1105%20passing-2ea44f?style=flat-square)](https://github.com/StChiotis/Claude-LFE/actions/workflows/ci.yml)
+[![license](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![release](https://img.shields.io/github/v/release/StChiotis/Claude-LFE?style=flat-square)](https://github.com/StChiotis/Claude-LFE/releases)
+[![use this template](https://img.shields.io/badge/use_this-template-24292f?style=flat-square&logo=github)](https://github.com/StChiotis/Claude-LFE/generate)
 
-A ready-to-clone project scaffold for any new project adopting the [Library-First Engineering (LFE)](https://github.com/StChiotis/Library-First-Engineering) framework with full Claude Code integration wired and ready.
+> **Making AI reliable, session after session.**
+
+The bottleneck in agentic software isn't capability — it's **trust**. A model that nails the prototype will, across dozens of sessions, lose intent, re-litigate settled decisions, and sprawl into spaghetti. **Claude-LFE** is a ready-to-clone [Claude Code](https://docs.anthropic.com/en/docs/claude-code) scaffold that keeps that from happening: the **human stays on the wheel**, **documentation is the source of truth**, and reliability is **mechanically enforced and measured** — not asserted.
+
+It's deliberately slower. That's the trade: overhead you choose to pay so the work holds up in production, not just in the demo. The discipline is borrowed from reliability engineering in marine and biotech — FMEA, RCM, poka-yoke — ported onto AI.
+
+**▶ Intro deck:** [stchiotis.github.io/Claude-LFE.intro](https://stchiotis.github.io/Claude-LFE.intro/) · built on the [Library-First Engineering](https://github.com/StChiotis/Library-First-Engineering) framework.
 
 ---
 
