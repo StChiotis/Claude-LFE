@@ -1,0 +1,7 @@
+{
+  "skill": "lfe-complexity-check",
+  "kind": "known-good",
+  "defect": "none — small table-driven helpers, shallow nesting",
+  "severities": { "high": { "min": 0, "max": 0 } },
+  "mustNotMention": ["nesting"]
+}

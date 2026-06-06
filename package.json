@@ -1,0 +1,13 @@
+﻿{
+  "name": "claude-lfe-template",
+  "version": "0.1.0",
+  "description": "Claude-native Library-First Engineering project template",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/run-tests.mjs",
+    "sync:lfe-skills": "node scripts/sync-claude-skills.mjs",
+    "sync:lfe-skills:check": "node scripts/sync-claude-skills.mjs --check",
+    "postinstall": "node scripts/setup-git-hooks.mjs"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "skill": "lfe-plan-critique",
+  "kind": "known-good",
+  "defect": "none — falsifiable ACs, clear verification, pure formatting infra (no undocumented business logic)",
+  "expectedVerdict": "PASS"
+}

@@ -1,0 +1,6 @@
+{
+  "skill": "lfe-security-check",
+  "kind": "known-good",
+  "defect": "none — parameterized query + allowlist-validated execFile argument",
+  "severities": { "critical": { "min": 0, "max": 0 }, "high": { "min": 0, "max": 0 } }
+}

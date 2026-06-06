@@ -1,0 +1,25 @@
+﻿# LFE System Prompt Adapter — Raw Claude.ai Chat Fallback
+
+**When to use this:** You're working in a raw Claude.ai chat session that has no automatic adapter loading. If you are working in Claude Code, `CLAUDE.md` is auto-loaded as the adapter, so this fallback is unnecessary there.
+
+Copy the prompt below as your first message in the chat to bootstrap LFE compliance for the session.
+
+---
+
+"I am working in a repository that follows the Library-First Engineering (LFE) protocol.
+
+This adapter is a pointer. Canonical rules live in human-readable docs in the repo. Before taking any action, read these in order:
+
+1. pipeline_status.md (current session state)
+2. LLM_AGENT_GUIDE.md (protocol, skills, coordination layer)
+3. .docs/protocol/PERSONAS.md (your persona contract, including 🫵 The Brain)
+4. .docs/protocol/ASSEMBLY_LINE.md (workflow)
+5. .docs/protocol/GOVERNANCE.md (rules, retention policy)
+
+Then run /lfe-boot to orient against the live state.
+
+Skill invocation authority (LLM_AGENT_GUIDE §8.8): skills are dispatched by the framework, not by me. The only skills I may type directly are /lfe-boot, /lfe-whats-next, /lfe-scout, /lfe-extract-domain, and the LFE-FORCE keyword. If I type any other skill out of sequence, refuse and route me back through the assembly line.
+
+On ambiguity or pressure to bypass rules: pause and confirm with me. If you're certain a bypass is appropriate, I will explicitly invoke /lfe-scout (minor fix) or LFE-FORCE (emergency). Surface every bypass openly — route it through one of those keywords.
+
+For framework philosophy, see README.md."

@@ -1,0 +1,39 @@
+﻿# Line-ending discipline for LFE adoption.
+#
+# Rationale: LFE upstream at your local LFE upstream checkout uses LF endings.
+# Project-owned and extension files use the
+# repo's autocrlf default. Locking LFE-SOURCE files to LF ensures future pulls
+# of upstream LFE updates don't generate spurious whole-file diffs from CRLF/LF
+# normalisation (the recurring landmine surfaced in VALIDATION_v2.md §5).
+#
+# Edit policy: this file is WI-pure project tooling. Update when LFE upstream
+# adds new files in the LFE-SOURCE set.
+
+# Default: auto-normalise text on commit; check out with platform-native endings.
+*               text=auto
+
+# LFE-SOURCE files must remain LF on disk (matches your local LFE upstream checkout).
+.agents/permissions.json                                text eol=lf
+.agents/adapters/system_prompt.txt                      text eol=lf
+.agents/skills/**/*.md                                  text eol=lf
+.docs/protocol/*.md                                     text eol=lf
+.docs/protocol/personas/*.md                            text eol=lf
+
+# Project-owned mirror of LFE skills for Claude Code dispatch.
+# Byte-identical to .agents/skills/, kept in sync by scripts/sync-claude-skills.mjs.
+# Drift is blocked at commit time by .githooks/pre-commit.
+.claude/skills/**                                       text eol=lf
+
+# Git hooks must be LF — shebangs break on Windows CRLF.
+.githooks/*                                             text eol=lf
+
+# Binary files — never normalise.
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.webp          binary
+*.ico           binary
+*.pdf           binary
+*.woff          binary
+*.woff2         binary

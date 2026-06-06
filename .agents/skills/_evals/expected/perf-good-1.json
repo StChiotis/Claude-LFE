@@ -1,0 +1,7 @@
+{
+  "skill": "lfe-perf-check",
+  "kind": "known-good",
+  "defect": "none — batched lookups + size-bounded cache",
+  "severities": { "critical": { "min": 0, "max": 0 }, "high": { "min": 0, "max": 0 } },
+  "mustNotMention": ["N+1"]
+}

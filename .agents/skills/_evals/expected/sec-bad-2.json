@@ -1,0 +1,7 @@
+{
+  "skill": "lfe-security-check",
+  "kind": "known-bad",
+  "defect": "OS command injection — request input concatenated into an exec() string",
+  "severities": { "critical": { "min": 1, "max": 4 } },
+  "mustMention": ["command"]
+}

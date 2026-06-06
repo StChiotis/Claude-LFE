@@ -1,0 +1,8 @@
+{
+  "bash-posture": "warn",
+  "boot-precondition": "warn",
+  "no-mission": "warn",
+  "persona-transition": "warn",
+  "scout-boundary": "warn",
+  "skill-eval": "warn"
+}

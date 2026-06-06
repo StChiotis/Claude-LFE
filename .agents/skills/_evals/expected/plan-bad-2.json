@@ -1,0 +1,6 @@
+{
+  "skill": "lfe-plan-critique",
+  "kind": "known-bad",
+  "defect": "undocumented business logic — invented discount math with no domain-doc backing (Logic Sovereignty / Lens 3 BLOCK)",
+  "expectedVerdict": "BLOCK"
+}

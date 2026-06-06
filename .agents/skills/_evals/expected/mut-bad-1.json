@@ -1,0 +1,7 @@
+{
+  "skill": "lfe-mutation-verify",
+  "kind": "known-bad",
+  "defect": "boundary mutation (> to >=) in isEligible is not asserted — tests use 25 and 5, never 18",
+  "escaped": { "min": 1, "max": 6 },
+  "mustMention": ["isEligible"]
+}

@@ -1,0 +1,27 @@
+#!/bin/sh
+# Pre-commit hook: two independent gates. Either failing refuses the commit.
+#
+#   1. MIRROR DRIFT — .claude/skills/<name>/SKILL.md must stay byte-identical to the
+#      canonical .agents/skills/<name>/SKILL.md. Claude Code dispatches /lfe-* from the
+#      mirror; drift would silently execute stale protocol. (sync-claude-skills --check)
+#
+#   2. SKILL-EVAL FRESHNESS — a staged edit to one of the five reasoning-skill prompts
+#      (security / perf / complexity / mutation-verify / plan-critique) requires a fresh
+#      PASSING eval on record whose content-hash matches the staged prompt
+#      (.claude/lib/__eval__/results.json). No LLM runs here — a pure hash compare.
+#      Warn-first (advisory; commit proceeds) by default; promotable to a hard block via
+#      the .claude/enforcement-posture.json key `skill-eval`.
+#
+# If gate 1 (mirror drift) fails:
+#   1. Run `npm run sync:lfe-skills`
+#   2. Re-stage the resulting changes (git add .claude/skills/)
+#   3. Re-run your commit
+#
+# If gate 2 (skill-eval freshness) refuses (block posture):
+#   1. Run `/lfe-skill-eval` (full) to refresh the scorecard + results record
+#   2. Re-stage and re-run your commit
+#
+# Edits to skill protocol go to the canonical source under .agents/skills/, never the mirror.
+
+node scripts/sync-claude-skills.mjs --check || exit $?
+node .claude/lib/skill-eval-gate.mjs || exit $?

@@ -1,0 +1,6 @@
+{
+  "skill": "lfe-perf-check",
+  "kind": "known-bad",
+  "defect": "N+1 — per-item getUser/getPost calls inside the loop",
+  "mustMention": ["N+1"]
+}

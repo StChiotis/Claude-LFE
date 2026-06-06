@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npm test *)",
+      "Bash(awk '{print $NF}')",
+      "Bash(xargs '-I{}' sh -c 'lines=$\\(wc -l < \"{}\"\\); chars=$\\(wc -c < \"{}\"\\); if [ \"$chars\" -gt 6000 ]; then echo \"$chars chars / $lines lines : {}\"; fi')",
+      "Bash(python3 -c ' *)",
+      "Bash(git worktree:*)",
+      "Bash(git branch:*)",
+      "Skill(lfe-grill-with-docs)",
+      "Skill(lfe-grill-with-docs:*)"
+    ]
+  },
+  "outputStyle": "default"
+}

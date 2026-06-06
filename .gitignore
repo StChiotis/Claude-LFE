@@ -1,0 +1,49 @@
+﻿# === OS ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === Dependencies ===
+node_modules/
+
+# === Environment ===
+.env
+.env.local
+.env.production
+.env.*.local
+
+# === Build output ===
+dist/
+build/
+out/
+.vite/
+
+# === Logs / transient test output ===
+*.log
+npm-debug.log*
+coverage_output.txt
+vitest_output.txt
+coverage/
+
+# === Python ===
+__pycache__/
+.venv/
+
+# === LFE Runtime ===
+# `.plans/` itself is committed (with .gitkeep) so the coordination directory exists on clone,
+# but the per-mission coordination files inside it are transient — they're never committed in steady state.
+# The .gitkeep file marks the directory; mid-mission files (`01_grill_summary.md`, etc.)
+# should not be committed because they only exist during an active session.
+.plans/*
+!.plans/.gitkeep
+
+# === Enforcement Hardening (ADR 95) ===
+# Private warn-and-log telemetry for the enforcement gates. Local observation
+# only — never committed (no repo-history noise; avoids leaking local paths).
+.claude/enforcement-telemetry.jsonl

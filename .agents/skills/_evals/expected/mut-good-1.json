@@ -1,0 +1,6 @@
+{
+  "skill": "lfe-mutation-verify",
+  "kind": "known-good",
+  "defect": "none — the boundary (18) and both sides are asserted, killing > / >= mutations",
+  "escaped": { "min": 0, "max": 0 }
+}

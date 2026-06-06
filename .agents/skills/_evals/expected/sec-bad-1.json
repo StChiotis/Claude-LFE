@@ -1,0 +1,7 @@
+{
+  "skill": "lfe-security-check",
+  "kind": "known-bad",
+  "defect": "SQL injection — request input concatenated into a query string",
+  "severities": { "critical": { "min": 1, "max": 4 } },
+  "mustMention": ["injection"]
+}

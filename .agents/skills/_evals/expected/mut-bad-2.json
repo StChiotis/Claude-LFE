@@ -1,0 +1,7 @@
+{
+  "skill": "lfe-mutation-verify",
+  "kind": "known-bad",
+  "defect": "the active-flag guard in canWithdraw is never exercised with active:false",
+  "escaped": { "min": 1, "max": 6 },
+  "mustMention": ["canWithdraw"]
+}

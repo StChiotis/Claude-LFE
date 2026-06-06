@@ -1,0 +1,6 @@
+{
+  "skill": "lfe-plan-critique",
+  "kind": "known-bad",
+  "defect": "unfalsifiable ACs (faster/cleaner/happier) + non-falsifiable verification (feels better)",
+  "expectedVerdict": "WARN"
+}

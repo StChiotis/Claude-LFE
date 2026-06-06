@@ -1,0 +1,6 @@
+{
+  "skill": "lfe-complexity-check",
+  "kind": "known-bad",
+  "defect": "god function — 7 parameters + mixed concerns (query, format, file I/O, log, mail)",
+  "mustMention": ["parameter"]
+}
