@@ -6,6 +6,12 @@
 [![release](https://img.shields.io/github/v/release/StChiotis/Claude-LFE?style=flat-square)](https://github.com/StChiotis/Claude-LFE/releases)
 [![use this template](https://img.shields.io/badge/use_this-template-24292f?style=flat-square&logo=github)](https://github.com/StChiotis/Claude-LFE/generate)
 
+[![Intro deck](docs/intro.gif)](https://stchiotis.github.io/Claude-LFE.intro/)
+
+> **Want to see the full introduction deck?** Visit [stchiotis.github.io/Claude-LFE.intro](https://stchiotis.github.io/Claude-LFE.intro/)
+
+---
+
 > **Making AI reliable, session after session.**
 
 The bottleneck in agentic software isn't capability — it's **trust**. A model that nails the prototype will, across dozens of sessions, lose intent, re-litigate settled decisions, and sprawl into spaghetti. **Claude-LFE** is a ready-to-clone [Claude Code](https://docs.anthropic.com/en/docs/claude-code) scaffold that keeps that from happening: the **human stays on the wheel**, **documentation is the source of truth**, and reliability is **mechanically enforced and measured** — not asserted.
@@ -13,8 +19,6 @@ The bottleneck in agentic software isn't capability — it's **trust**. A model 
 It's deliberately slower. That's the trade: overhead you choose to pay so the work holds up in production, not just in the demo. The discipline is borrowed from reliability engineering in marine and biotech — FMEA, RCM, poka-yoke — ported onto AI.
 
 Built on the [Library-First Engineering](https://github.com/StChiotis/Library-First-Engineering) framework.
-
-[![Intro deck](docs/intro.gif)](https://stchiotis.github.io/Claude-LFE.intro/)
 
 ---
 
