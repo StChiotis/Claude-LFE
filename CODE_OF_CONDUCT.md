@@ -22,7 +22,7 @@ Applies to all project spaces — issues, pull requests, discussions, and any pu
 
 ## Enforcement
 
-Report unacceptable behavior to the maintainer at **st.chiotis94@gmail.com**. Reports are handled confidentially. Maintainers may remove contributions and may warn, temporarily ban, or permanently ban anyone who violates this code.
+Report unacceptable behavior to the maintainer at **st.chiotis94@gmail.com** or via [LinkedIn](https://www.linkedin.com/in/stylianos-chiotis/). Reports are handled confidentially. Maintainers may remove contributions and may warn, temporarily ban, or permanently ban anyone who violates this code.
 
 ## Attribution
 

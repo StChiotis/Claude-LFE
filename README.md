@@ -74,6 +74,13 @@ See [`README.md`](https://github.com/StChiotis/Library-First-Engineering) on the
 
 ---
 
+## Author
+
+Built by **Stylianos Chiotis** — reliability engineering (marine · biotech) ported onto AI.
+Connect or reach out: [LinkedIn](https://www.linkedin.com/in/stylianos-chiotis/) · [intro deck](https://stchiotis.github.io/Claude-LFE.intro/) · [Library-First Engineering](https://github.com/StChiotis/Library-First-Engineering).
+
+---
+
 ## License
 
 MIT
