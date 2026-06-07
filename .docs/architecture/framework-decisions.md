@@ -2,7 +2,7 @@
 
 > **What this file is.** These ADRs document the architectural decisions behind the Claude Code integration substrate that ships with Claude-LFE — the enforcement hooks, the statusLine, the Inspector specialist dispatch, the eval harness, the drift/sync tooling. They explain the **why** behind every file under `.claude/` and `.githooks/`. Read this when you are modifying the framework itself.
 > **Frozen for adopters.** Building a product on Claude-LFE? Record your product's architecture decisions in [`architecture-decisions.md`](./architecture-decisions.md) — it starts empty at ADR 1. Treat this file as read-only framework history; the inline `(ADR N)` citations throughout `.claude/` resolve to the numbered entries here.
-> **Numbering.** These entries keep their original sequence numbers (81 and up) as a frozen historical set; a new framework decision increments the highest number here.
+> **Numbering.** These entries keep their original sequence numbers (81 and up) as a frozen historical set; a new framework decision increments the highest number here. The sequence runs 81–100; **ADR 88 (Inspector subagent dispatch) was superseded by ADR 93** before this file was split out, so it is kept as a short stub — its full decision content lives in the index row above and in ADR 93. The Full ADR Bodies section therefore reads 89 → 88 (stub) → 87 by design.
 
 | ADR | Title | Status | What it governs |
 |---|---|---|---|
@@ -530,6 +530,14 @@ The grill phase staged a sandbox falsification protocol for Brain external execu
 
 ---
 
+## ADR 88: Inspector subagent dispatch + per-specialist write-restriction — superseded by ADR 93
+
+**Status:** Superseded → ADR 93
+
+*No standalone body by design.* ADR 88's full decision content is preserved inline in the index-table row at the top of this file; the standing decision is **ADR 93** below (the Inspector's 5 specialist passes run as in-chat skills — the subagent machinery never registered in this repo and was removed). This stub keeps the Full ADR Bodies sequence contiguous: the 89 → 88 → 87 order is intentional, not a gap.
+
+---
+
 ## ADR 87: Hook `if`-filter pattern: matcher-only over `if: "<dir>/*"`; external Brain live-verification convention (2026-05-18)
 
 **Status:** ✅ Accepted (the external-Brain live-verification convention has completed its first PASSing cycle since ratification. Mutation M9 was confirmed empirically across multiple sessions — the first several on the FAIL side, then on the PASS side; the convention is empirically validated as load-bearing on every mechanical-enforcement landing.)
@@ -695,7 +703,7 @@ The Brain-approved plan at the plan-mode gate listed only Category I paths in `F
 ### Considered Options
 
 - **(α) Hook-internal hard-coded list, Categories I + II — chosen.** Persona-agnostic; lives in the hook script (`persona-path-lock.mjs`), not in `permissions.json`; preserves the 0-LFE-SOURCE-touches success criterion; self-documenting (anyone reading the hook sees the carve-out and its rationale via this ADR); tested via the per-persona × per-path-class fixture matrix (35 ALLOW cells: 5 personas × 7 carve-out paths).
-- **(β) Edit `.agents/permissions.json` to add `.claude/**` + `pipeline_status.md` + `LLM_AGENT_GUIDE.md` to all personas — rejected.** Requires editing LFE-SOURCE, violating the 0-LFE-SOURCE-touches invariant and the [.gitattributes](.gitattributes) lock. Also misframes the architectural truth — these are not "things every persona is allowed to write because we forgot to list them" but "infrastructure layered beneath the persona model itself."
+- **(β) Edit `.agents/permissions.json` to add `.claude/**` + `pipeline_status.md` + `LLM_AGENT_GUIDE.md` to all personas — rejected.** Requires editing LFE-SOURCE, violating the 0-LFE-SOURCE-touches invariant and the [.gitattributes](../../.gitattributes) lock. Also misframes the architectural truth — these are not "things every persona is allowed to write because we forgot to list them" but "infrastructure layered beneath the persona model itself."
 - **(γ) Project override field `lfeProjectOverrides.frameworkInfraPaths` in `.claude/settings.json` — rejected.** More flexible (project can extend the list without code change) but adds a new contract surface (the override field + its parser), increases the hook's input dependency count, and provides no benefit when the carve-out list is small and stable.
 - **(δ) `LFE-FORCE` escape for every Archivist write to `pipeline_status.md` / `LLM_AGENT_GUIDE.md` — rejected.** Would generate a PROTOCOL_DEBT.md row per Archivist mission for routine end-of-mission cleanup. The point of LFE-FORCE is to record genuine emergencies, not to launder framework-internal coordination as bureaucratic debt.
 - **(ε) Separate `.plans/persona_lock.md` state file outside `pipeline_status.md` — rejected for v1.**  Would let the hook read persona state from a file that's NOT in the carve-out, decoupling the Active Persona signal from the entrance card. Plausible but adds a new coordination file and a second source of truth for persona state; significant architectural complexity for what is currently a clean trade-off resolution.

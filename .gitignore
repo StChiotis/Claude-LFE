@@ -43,6 +43,9 @@ __pycache__/
 .plans/*
 !.plans/.gitkeep
 
+# Transient runtime locks (scheduled-tasks etc.) — hold a live pid/sessionId, never committed.
+.claude/*.lock
+
 # === Enforcement Hardening (ADR 95) ===
 # Private warn-and-log telemetry for the enforcement gates. Local observation
 # only — never committed (no repo-history noise; avoids leaking local paths).
