@@ -3,11 +3,11 @@
 | Category | Status / Value |
 | :--- | :--- |
 | **Integrity Score** | 🟢 [Integrity: 100%] |
-| **Mission State** | [IN-FLIGHT: Architect] — eval-harness reliability fixes (#1 grader false-positive check · #2 plan-critique calibration). Major Change pipeline. |
-| **Active Persona** | 🏛️ Architect |
-| **Active Mission** | Fix two eval-harness defects (#1 grader FP-check; #2 plan-critique calibration). Bare-minimum footprint; scorecard kept populated; repo returns to blank canvas at end. |
-| **Pipeline Phase** | Phase 1 — Architect (Step 1 grill ✅ → Step 2 PRD) |
-| **Coordination Files** | 01 ✅  02 ✅  03 ⬜  plan ⬜  plan_critique ⬜  build ⬜  tdd ⬜  critique ⬜  inspect ⬜  *(clean)* |
+| **Mission State** | [BLANK CANVAS] — fresh Claude-LFE starter; no product domain loaded yet. Run `/lfe-boot`; on a blank canvas it routes straight to `/lfe-extract-domain` to capture your product's domain (Day 0). |
+| **Active Persona** | — _(none — awaiting Day-0)_ |
+| **Active Mission** | (none — run `/lfe-boot` → `/lfe-extract-domain` to define your first mission) |
+| **Pipeline Phase** | (none — Day 0) |
+| **Coordination Files** | 01 ⬜  02 ⬜  03 ⬜  plan ⬜  plan_critique ⬜  build ⬜  tdd ⬜  critique ⬜  inspect ⬜  *(clean)* |
 | **Session Count** | 0 |
 | **Last Architecture Sweep** | none yet (fresh starter) |
 | **Authorized Scope** | (none) |

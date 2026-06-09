@@ -142,6 +142,35 @@ export function countEscapedMutations(text) {
   return n;
 }
 
+/**
+ * The text of a report's FLAGGED findings — scopes the negative (mustNotMention)
+ * check so a term named only in clean-category / summary prose does NOT count as
+ * the skill having raised that finding (the false-positive artefact this fixes).
+ *   - severity: bullet payloads under the severity sections.
+ *   - outcome:  the escaped-mutations section's rows.
+ *   - verdict:  no finding-bullet concept ⇒ whole text (no fixture scopes a
+ *               negative mention here; preserves prior behaviour).
+ */
+export function findingsText(text, family) {
+  if (family === FAMILY.SEVERITY) {
+    const out = [];
+    for (const level of SEVERITY_LEVELS) {
+      for (const line of sectionLines(text, (h) => SEVERITY_HEADING[level].test(h))) {
+        const b = line.match(BULLET_RE);
+        if (!b) continue;
+        const payload = b[1].trim().replace(/^<|>$/g, '').trim();
+        if (payload === '' || NONE_SENTINEL_RE.test(payload)) continue;
+        out.push(payload);
+      }
+    }
+    return out.join('\n');
+  }
+  if (family === FAMILY.OUTCOME) {
+    return sectionLines(text, (h) => /^escaped\b/i.test(h)).join('\n');
+  }
+  return String(text ?? '');
+}
+
 /** Check mustMention / mustNotMention substrings (case-insensitive). Returns check rows. */
 export function checkMentions(text, mustMention = [], mustNotMention = []) {
   const hay = String(text ?? '').toLowerCase();
@@ -215,9 +244,14 @@ export function gradeSkillOutput(outputText, sidecar) {
       return { pass: false, score: 0, parseError: true, reasons: [`unknown or missing sidecar.skill "${sidecar.skill}" — no family`] };
     }
     const family = FAMILIES[sidecar.skill];
+    // Positive mentions are checked against the whole report; negative mentions
+    // (the false-positive guard) are scoped to the FLAGGED findings only, so a
+    // cleared category named in prose ("no injection here") is not counted as
+    // the skill having raised that finding.
     const checks = [
       ...familyChecks(outputText, sidecar, family),
-      ...checkMentions(outputText, sidecar.mustMention, sidecar.mustNotMention),
+      ...checkMentions(outputText, sidecar.mustMention, []),
+      ...checkMentions(findingsText(outputText, family), [], sidecar.mustNotMention),
     ];
     const passed = checks.filter((c) => c.ok).length;
     const score = checks.length === 0 ? 1 : passed / checks.length;

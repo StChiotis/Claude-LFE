@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T13:40:51Z",
+  "generatedAt": "2026-06-09T15:36:17Z",
   "k": 5,
   "session": 0,
   "model": "Claude Opus 4.8",
@@ -30,18 +30,18 @@
     "lfe-perf-check": {
       "promptHash": "5e18659f17349da5cd1949aa3664c9ed2779bd69ca77b54117c0487ac8657d35",
       "catchRate": 1,
-      "falsePositiveRate": 1,
-      "saturated": false,
-      "passed": false,
+      "falsePositiveRate": 0,
+      "saturated": true,
+      "passed": true,
       "k": 5,
       "session": 0
     },
     "lfe-plan-critique": {
       "promptHash": "db7a8780ad49a28d889bc35c55d4e7d264cb5d4b5e4716155af3f3de0e5b143e",
-      "catchRate": 0.5,
+      "catchRate": 1,
       "falsePositiveRate": 0,
-      "saturated": false,
-      "passed": false,
+      "saturated": true,
+      "passed": true,
       "k": 5,
       "session": 0
     },

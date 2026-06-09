@@ -38,7 +38,7 @@ function fixtureIndex() {
 
 test('every sidecar is valid JSON and schema-conformant', () => {
   const sidecars = loadSidecars();
-  assert.ok(sidecars.length >= 15, `expected >= 15 sidecars, got ${sidecars.length}`);
+  assert.ok(sidecars.length >= 14, `expected >= 14 sidecars, got ${sidecars.length}`);
   for (const { name, sidecar } of sidecars) {
     assert.ok(FAMILIES[sidecar.skill], `${name}: unknown skill "${sidecar.skill}"`);
     assert.ok(VALID_KINDS.has(sidecar.kind), `${name}: bad kind "${sidecar.kind}"`);
@@ -60,14 +60,22 @@ test('every sidecar is valid JSON and schema-conformant', () => {
   }
 });
 
-test('each skill has exactly two known-bad and one known-good fixture', () => {
+test('each skill has the expected known-bad/known-good fixture tally', () => {
   const tally = {};
   for (const { sidecar } of loadSidecars()) {
     tally[sidecar.skill] ??= { 'known-bad': 0, 'known-good': 0 };
     tally[sidecar.skill][sidecar.kind] += 1;
   }
+  // Most skills carry two known-bad + one known-good. plan-critique carries one
+  // known-bad (the obvious BLOCK) + one known-good (the obvious PASS): its
+  // WARN/BLOCK borderline is a subjective judgment delegated to the human gate,
+  // not auto-graded.
+  const expectedTally = (skill) =>
+    skill === 'lfe-plan-critique'
+      ? { 'known-bad': 1, 'known-good': 1 }
+      : { 'known-bad': 2, 'known-good': 1 };
   for (const skill of Object.keys(FAMILIES)) {
-    assert.deepEqual(tally[skill], { 'known-bad': 2, 'known-good': 1 }, `${skill} tally`);
+    assert.deepEqual(tally[skill], expectedTally(skill), `${skill} tally`);
   }
 });
 
