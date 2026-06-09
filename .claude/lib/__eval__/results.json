@@ -1,1 +1,58 @@
-{}
+{
+  "generatedAt": "2026-06-09T13:40:51Z",
+  "k": 5,
+  "session": 0,
+  "model": "Claude Opus 4.8",
+  "thresholds": {
+    "reliableThreshold": 0.8,
+    "passThreshold": 0.8,
+    "fpThreshold": 0.2
+  },
+  "skills": {
+    "lfe-complexity-check": {
+      "promptHash": "68a2c930f89a5baf7712ba4614dee5f32764b06b28c4ff9d181b765e9edd7f89",
+      "catchRate": 1,
+      "falsePositiveRate": 0,
+      "saturated": true,
+      "passed": true,
+      "k": 5,
+      "session": 0
+    },
+    "lfe-mutation-verify": {
+      "promptHash": "e00144b637c7a8bf162a59ec9ae30b7500c9dd8ebf25e854ec6cc5cd23c29839",
+      "catchRate": 1,
+      "falsePositiveRate": 0,
+      "saturated": true,
+      "passed": true,
+      "k": 5,
+      "session": 0
+    },
+    "lfe-perf-check": {
+      "promptHash": "5e18659f17349da5cd1949aa3664c9ed2779bd69ca77b54117c0487ac8657d35",
+      "catchRate": 1,
+      "falsePositiveRate": 1,
+      "saturated": false,
+      "passed": false,
+      "k": 5,
+      "session": 0
+    },
+    "lfe-plan-critique": {
+      "promptHash": "db7a8780ad49a28d889bc35c55d4e7d264cb5d4b5e4716155af3f3de0e5b143e",
+      "catchRate": 0.5,
+      "falsePositiveRate": 0,
+      "saturated": false,
+      "passed": false,
+      "k": 5,
+      "session": 0
+    },
+    "lfe-security-check": {
+      "promptHash": "f04e6afc4ff3ef1ce10de8f81f964444d444d4f67c6fb5d5ff222b3d10ec9bfa",
+      "catchRate": 1,
+      "falsePositiveRate": 0,
+      "saturated": true,
+      "passed": true,
+      "k": 5,
+      "session": 0
+    }
+  }
+}
