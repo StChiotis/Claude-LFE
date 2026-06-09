@@ -11,6 +11,7 @@ import {
   countSeverityFindings,
   countEscapedMutations,
   checkMentions,
+  findingsText,
   FAMILIES,
   FAMILY,
 } from '../skill-eval.mjs';
@@ -149,6 +150,55 @@ test('severity known-good: a false-alarm Critical fails the zero-band (false-pos
   // Both the severity band AND the forbidden mention should trip.
   assert.ok(res.reasons.some((r) => /FAIL severity:critical/.test(r)));
   assert.ok(res.reasons.some((r) => /FAIL mustNotMention:injection/.test(r)));
+});
+
+// A clean report that NAMES the cleared category in prose (clean-categories line
+// + summary) but raises zero findings. Before the finding-scoped fix this failed
+// on the bare substring; it must now pass — the false-positive artefact's regression test.
+const SECURITY_CLEAN_NAMES_CLEARED = `## Security Check Findings
+
+**Scope**: src/repo.mjs
+**Clean categories**: A03 Injection, A01, A02, A07
+
+### Critical
+- None
+
+### High
+- None
+
+### Medium
+- None
+
+### Low / Informational
+- None
+
+### Summary
+- No injection vectors: all inputs are parameterised.
+- Critical issues: 0
+`;
+
+test('severity known-good: forbidden term named only in cleared-category/summary prose → passes (finding-scoped negative mention)', () => {
+  const sidecar = {
+    skill: 'lfe-security-check',
+    kind: 'known-good',
+    severities: { critical: { min: 0, max: 0 }, high: { min: 0, max: 0 } },
+    mustNotMention: ['injection'],
+  };
+  const res = gradeSkillOutput(SECURITY_CLEAN_NAMES_CLEARED, sidecar);
+  assert.equal(res.pass, true, JSON.stringify(res.reasons, null, 2));
+  assert.ok(res.reasons.some((r) => /PASS mustNotMention:injection/.test(r)),
+    'a prose-only mention of a cleared category must not trip the negative-mention guard');
+});
+
+test('findingsText: scopes to flagged findings — excludes cleared-category/summary prose, includes real findings', () => {
+  // prose mention of the cleared category is NOT part of the findings text
+  assert.equal(findingsText(SECURITY_CLEAN_NAMES_CLEARED, FAMILY.SEVERITY).includes('injection'), false);
+  // a real severity finding IS
+  assert.ok(findingsText(SECURITY_BAD, FAMILY.SEVERITY).includes('SQL injection'));
+  // outcome family scopes to the escaped-mutation rows
+  assert.ok(findingsText(MUTATION_BAD, FAMILY.OUTCOME).includes('calcFee'));
+  // verdict family has no finding-bullet concept → whole text (prior behaviour)
+  assert.equal(findingsText('## Verdict: PASS', FAMILY.VERDICT), '## Verdict: PASS');
 });
 
 // --- Outcome family -----------------------------------------------------------
