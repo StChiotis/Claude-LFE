@@ -20,6 +20,8 @@ It's deliberately slower. That's the trade: overhead you choose to pay so the wo
 
 Built on the [Library-First Engineering](https://github.com/StChiotis/Library-First-Engineering) framework.
 
+> 📖 **The long-form argument** — this thesis is laid out in full in ["The Bottleneck in Agentic Software Isn't Capability. It's Trust"](https://medium.com/towards-artificial-intelligence/the-bottleneck-in-agentic-software-isnt-capability-it-s-trust-claude-lfe-8665c0ff5fbd) (*Towards AI*, Jun 2026). The full text also ships in-repo as [`MEDIUM ARTICLE.md`](<MEDIUM ARTICLE.md>) so the rationale travels with the template — for human readers and for any agent auditing the repo.
+
 ---
 
 ## What's included
@@ -83,7 +85,7 @@ See [`README.md`](https://github.com/StChiotis/Library-First-Engineering) on the
 ## Author
 
 Built by **Stylianos Chiotis** — reliability engineering (marine · biotech) ported onto AI.
-Connect or reach out: [LinkedIn](https://www.linkedin.com/in/stylianos-chiotis/) · [intro deck](https://stchiotis.github.io/Claude-LFE.intro/) · [Library-First Engineering](https://github.com/StChiotis/Library-First-Engineering).
+Connect or reach out: [LinkedIn](https://www.linkedin.com/in/stylianos-chiotis/) · [intro deck](https://stchiotis.github.io/Claude-LFE.intro/) · [Writing: *The Trust Bottleneck*](https://medium.com/towards-artificial-intelligence/the-bottleneck-in-agentic-software-isnt-capability-it-s-trust-claude-lfe-8665c0ff5fbd) · [Library-First Engineering](https://github.com/StChiotis/Library-First-Engineering).
 
 ---
 

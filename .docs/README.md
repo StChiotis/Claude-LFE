@@ -30,6 +30,7 @@
 | Contributing | [`CONTRIBUTING.md`](../CONTRIBUTING.md) | How to contribute under the LFE workflow. |
 | License | [`LICENSE`](../LICENSE) | MIT license. |
 | Root Readme | [`README.md`](../README.md) | High-level project overview and getting-started guide. |
+| Narrative context | [`MEDIUM ARTICLE.md`](<../MEDIUM ARTICLE.md>) (repo root) | Long-form essay on *why* the framework exists — the trust-bottleneck argument. Context for human readers and any agent auditing the repo; cloners may delete it when adapting the template. |
 
 ---
 
