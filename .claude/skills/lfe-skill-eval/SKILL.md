@@ -21,11 +21,12 @@ Each run executes in a fresh, isolated subagent context (the general-purpose Age
 1. **Verbatim prompts**: read each target skill's canonical prompt from `.agents/skills/<skill>/SKILL.md` and feed it to the subagent byte-for-byte. The eval measures the prompt exactly as it ships.
 2. **One isolated subagent per run**: spawn a fresh subagent for every (fixture × run) pair; keep the contexts independent.
 3. **Deterministic grading**: grade each captured output through `node .claude/lib/skill-eval.mjs <output> <sidecar> --json` and read the `pass` boolean. Aggregation + render run through `node .claude/lib/skill-eval-report.mjs`. Reasoning stays in the subagents; scoring stays in the tested core.
-4. **Honest results**: the scorecard + the results record are rendered by the report CLI from real graded runs. A smoke run writes to a throwaway temp path, leaving the committed scorecard in its initial state.
+4. **Honest results**: the scorecard + the results record are rendered by the report CLI from real graded runs. A smoke run writes its scorecard + results into the per-run scratch directory (Hard Rule 6), leaving the committed scorecard in its initial state.
 5. **Key off the sidecar**: each fixture's `expected/<name>.json` declares its `skill` and `kind`; resolve the canonical prompt and the family from that `skill` field (the fixture directory name is a family label; the sidecar `skill` is authoritative).
+6. **Scratch lifecycle (out-of-tree + cleanup)**: write ALL transient scratch — captured-findings files, the `runResults` JSON, and any smoke-mode throwaway scorecard/results — to a single per-run scratch directory created under the OS temp dir (`os.tmpdir()` / `mkdtemp`; `$env:TEMP` on Windows), always outside the repo working tree. Give scratch files a `.tmp` suffix. Delete the per-run scratch directory at end-of-run — on success or failure — so a run leaves no transient file behind. The only files a run writes into the tree are the committed deliverables on a full run (`.docs/quality/skill-eval-scorecard.md` + `.claude/lib/__eval__/results.json`); a smoke run writes none.
 
 ## Modes
-- **smoke** (build-time proof / CI-cheap): a small subset — e.g. 2 fixtures × k=2 — that proves the subagent → grade → aggregate → render pipeline end-to-end. Output goes to a temp path; the committed scorecard stays in its initial state.
+- **smoke** (build-time proof / CI-cheap): a small subset — e.g. 2 fixtures × k=2 — that proves the subagent → grade → aggregate → render pipeline end-to-end. Output goes to the per-run scratch directory (Hard Rule 6); the committed scorecard stays in its initial state.
 - **full** (every 3rd Hygiene sweep ≈ every 15 sessions / on-demand): the whole corpus (15 fixtures) × k=5 ≈ 75 subagent runs. Token-bounded by design — this is exactly why the full run rides a longer cadence than the 5-session sweep (see Step 1's cadence gate): run it on every 3rd Hygiene sweep or on explicit request, and surface the run count as the token cost for Brain awareness. A full run populates the committed scorecard + results record.
 
 ## Inputs
@@ -47,7 +48,7 @@ For each selected fixture:
 2. Read the canonical prompt `.agents/skills/<skill>/SKILL.md`.
 3. Read the fixture file `fixtures/<family>/<name>.{js,md}`.
 4. Repeat k times: spawn an isolated subagent (general-purpose Agent/Task tool) whose instruction is the canonical prompt PLUS the fixture (presented per its family, below), asking it to emit only the skill's findings output in that skill's canonical format.
-5. Write the captured findings to a temp file and grade it: `node .claude/lib/skill-eval.mjs <tmp-findings.md> .agents/skills/_evals/expected/<name>.json --json` → record the `pass` boolean.
+5. Write the captured findings to a `.tmp` file inside the per-run scratch directory (Hard Rule 6) and grade it: `node .claude/lib/skill-eval.mjs <scratch-dir>/findings.tmp .agents/skills/_evals/expected/<name>.json --json` → record the `pass` boolean.
 
 The k booleans become that fixture's `runs` array.
 
@@ -58,7 +59,7 @@ Present each fixture to the subagent in the role its skill expects:
 - **plan-critique** (verdict family; `.md` fixture = a plan document): present the fixture as the plan under review and ask for the `## Verdict: PASS | WARN | BLOCK` output. In eval, the usual companion inputs (PRD, slices) are absent by design — the fixture plans are self-contained for a standalone verdict.
 
 ### Step 3 — Aggregate + render
-Assemble `runResults` = `[{ fixture, skill, kind, runs }]` for every evaluated fixture, write it to a temp JSON, then run the report CLI:
+Assemble `runResults` = `[{ fixture, skill, kind, runs }]` for every evaluated fixture, write it to a `.tmp` JSON inside the per-run scratch directory (Hard Rule 6), then run the report CLI:
 
 ```
 node .claude/lib/skill-eval-report.mjs --runs <runResults.json> \
@@ -66,10 +67,12 @@ node .claude/lib/skill-eval-report.mjs --runs <runResults.json> \
   --k <k> --session <N> --timestamp <ISO-8601> --model <current-session-model-id>
 ```
 
+For a smoke run, `<scorecard-path>` and `<results-path>` point into the per-run scratch directory (Hard Rule 6); for a full run they are the committed paths.
+
 The report CLI computes per-skill catch-rate / false-positive / saturation / passed, hashes each evaluated prompt, and writes the scorecard + results record — keeping the math in tested code rather than in prose.
 
 ### Step 4 — Report
 Summarise to the Brain: the scorecard path + a one-line per-skill read (passed / saturated / any skill below threshold) + the model the run was produced with (now recorded on the scorecard's Run-parameters line and in the results record). For a full run, include the subagent-run count as the token cost.
 
 ## Handoff
-A full run leaves a populated scorecard + results record in place for the pre-commit gate and the next Hygiene review. A smoke run leaves a temp artifact for inspection and the committed scorecard in its initial state.
+A full run leaves a populated scorecard + results record in place for the pre-commit gate and the next Hygiene review. A smoke run writes its scratch under the OS temp dir (inspectable there during the run) and removes it at end-of-run (Hard Rule 6), leaving the committed scorecard in its initial state.

@@ -30,6 +30,10 @@ npm-debug.log*
 coverage_output.txt
 vitest_output.txt
 coverage/
+# Eval-harness scratch backstop (lfe-skill-eval Hard Rule 6): scratch writes to the OS
+# temp dir (out of tree) and is deleted at end-of-run; this *.tmp net only catches a
+# residual in-tree slip.
+*.tmp
 
 # === Python ===
 __pycache__/
