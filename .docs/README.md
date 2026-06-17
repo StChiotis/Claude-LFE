@@ -7,7 +7,7 @@
 - **`.docs/` (The Library)**: the absolute Source of Truth — permanent, verified project knowledge.
 - **`.plans/` (The Coordination Layer)**: short-term file-based handoffs between pipeline steps. Empty when no mission is in flight.
 - **`pipeline_status.md` (repo root)**: the live entrance card for the active session.
-- **`.agents/skills/`**: the 23 LFE skills the framework dispatches.
+- **`.agents/skills/`**: the 24 LFE skills the framework dispatches.
 - See `LLM_AGENT_GUIDE.md` (repo root) for the canonical agent rules.
 
 ---
@@ -22,7 +22,7 @@
 | Adapter | [`CLAUDE.md`](../CLAUDE.md) | Claude Code adapter pointer stub — auto-loaded by Claude Code at session start. References `LLM_AGENT_GUIDE.md` as canonical. |
 | System Prompt | [`.agents/adapters/system_prompt.txt`](../.agents/adapters/system_prompt.txt) | Raw Claude.ai chat adapter (copy-paste as first message when no Claude Code is available). |
 | Floor map | **this file** | Navigation index. |
-| Agent Core | [`.agents/skills/`](../.agents/skills/) | Home for the 23 LFE skills the framework dispatches (the persona skills, the 5 Inspector sub-skills, and `lfe-plan-critique`). |
+| Agent Core | [`.agents/skills/`](../.agents/skills/) | Home for the 24 LFE skills the framework dispatches (the persona skills, the 6 Inspector sub-skills, and `lfe-plan-critique`). |
 | Eval Corpus | [`.agents/skills/_evals/`](../.agents/skills/_evals/) | Skill-accuracy eval fixtures + expected sidecars + shelf index — the corpus `/lfe-skill-eval` grades. |
 | Domain Language | [`CONTEXT.md`](../CONTEXT.md) (repo root) | Canonical glossary — populated by `/lfe-extract-domain`. Intentionally absent on a fresh clone. |
 | Domain SSOT | [`domain/`](./domain/README.md) | Math + business rules + detailed glossary. Ships with a Shelf Index only; populated Day-0 by `/lfe-extract-domain` + `/lfe-grill-with-docs`. |

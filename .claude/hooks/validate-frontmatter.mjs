@@ -31,6 +31,11 @@ const EXECUTION_TIER_FILENAMES = [
   'tdd_report.md',
   'inspection_report.md',
   'diagnosis_report.md',
+  // The finalization-rework sentinel (ADR 101): written by /lfe-inspector on a
+  // Brain rejection, read by /lfe-builder for rework re-entry. Execution-tier so
+  // its `slice` field is enforced — the Builder matches it against active_plan's
+  // slice, and Hygiene detects it as stale if a prior slice's cleanup missed it.
+  'rework_directive.md',
 ];
 const EXECUTION_TIER_CHECKS_PATTERN = /^\.plans\/checks\/[^/]+_findings\.md$/;
 const SCHEMA_REFERENCE = 'COORDINATION_FILES.md:5-23';

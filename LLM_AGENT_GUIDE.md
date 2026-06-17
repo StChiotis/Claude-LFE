@@ -70,6 +70,7 @@ If no CONTEXT-MAP.md exists, your project is single-context. Use root `CONTEXT.m
 | `/lfe-complexity-check` *(opt-in sub-skill)* | `builder_done.md`, changed files | `.plans/checks/complexity_findings.md` |
 | `/lfe-dep-audit` *(opt-in sub-skill)* | `builder_done.md`, manifest files | `.plans/checks/dep_findings.md` |
 | `/lfe-mutation-verify` *(opt-in sub-skill)* | `builder_done.md`, impl + test files | `.plans/checks/mutation_findings.md` |
+| `/lfe-visual-check` *(opt-in sub-skill; auto-armed by the Visual Floor on a UI-file touch)* | `builder_done.md`, changed UI files, `active_plan.md` `## UI Surface` | `.plans/checks/visual_findings.md` |
 | `/lfe-inspector` | `tdd_report.md` + `.plans/checks/*.md` *(or `PROTOCOL_DEBT.md` after LFE-FORCE)* | `.plans/critique.md` then `.plans/inspection_report.md` |
 | `/lfe-diagnose` *(conditional, 1st failure only)* | Failing behavior + `tdd_report.md` | `.plans/diagnosis_report.md` |
 | `/lfe-hygiene` *(every 5 sessions)* | Full repo | `.plans/hygiene_report.md` |
@@ -118,7 +119,7 @@ Skills are **dispatched by the framework**, not by the Brain. Each persona's sub
 | `/lfe-extract-domain` | Restart Day 0 discovery |
 | `LFE-FORCE` | Emergency break-glass keyword (not a slash command) |
 
-**Agent-only skills** (the framework dispatches these from within the assembly line): every other skill in §9 below — Architect sub-pipeline (`/lfe-grill-with-docs`, `/lfe-to-prd`, `/lfe-to-issues`, `/lfe-architect`, `/lfe-plan-critique`), Builder sub-pipeline (`/lfe-builder`, `/lfe-tdd`), Inspector sub-pipeline (`/lfe-zoom-out`, `/lfe-inspector`, `/lfe-diagnose`), all Inspector specialist sub-skills (`/lfe-security-check`, `/lfe-perf-check`, `/lfe-complexity-check`, `/lfe-dep-audit`, `/lfe-mutation-verify`), Archivist (`/lfe-archivist`), Hygiene (`/lfe-hygiene`, `/lfe-improve-architecture`).
+**Agent-only skills** (the framework dispatches these from within the assembly line): every other skill in §9 below — Architect sub-pipeline (`/lfe-grill-with-docs`, `/lfe-to-prd`, `/lfe-to-issues`, `/lfe-architect`, `/lfe-plan-critique`), Builder sub-pipeline (`/lfe-builder`, `/lfe-tdd`), Inspector sub-pipeline (`/lfe-zoom-out`, `/lfe-inspector`, `/lfe-diagnose`), all Inspector specialist sub-skills (`/lfe-security-check`, `/lfe-perf-check`, `/lfe-complexity-check`, `/lfe-dep-audit`, `/lfe-mutation-verify`, `/lfe-visual-check`), Archivist (`/lfe-archivist`), Hygiene (`/lfe-hygiene`, `/lfe-improve-architecture`).
 
 **Refusal protocol**: if the Brain types an agent-only skill out of sequence — `/lfe-builder` with no approved plan, an Inspector sub-skill outside dispatch context, `/lfe-archivist` with no `inspection_report.md` — refuse and route them through the assembly line. Respond with: *"This skill is dispatched by the framework, not invoked manually. Tell me what you want to accomplish and I'll run the correct sub-pipeline."*
 
@@ -131,12 +132,13 @@ Mechanical enforcement is **speed-bumps + loudness, not containment** (the harne
 - **C2a boot-precondition** (`boot-precondition-gate.mjs`) — no substantive Write/Edit until `/lfe-boot` ran this session.
 - **C2b scout-boundary** (`skill-invocation-gate.mjs`) — `/lfe-scout` refused mid-mission.
 - **C3 persona-transition** (`persona-transition-guard.mjs`) — the Active-Persona value changes only via an official skill-dispatched marker.
+- **visual-gate** (`visual-gate.mjs`) — a visual slice's Inspector→Archivist close requires `visual_confirmed` + `visual_signoff` in `inspection_report.md`; a **hard floor** that denies even under `warn` posture, with fail-safe ALLOW on every ambiguous path (ADR 102).
 - **C4 no-mission** (`no-mission-gate.mjs`) — no substantive change at a completed/idle slate with no coordination trail.
 - **mission-aware path-lock** (`persona-path-lock.mjs`) — an in-flight mission's `Authorized Scope` entrance-card row (§10) extends the authorized write scope.
 
-**`Write|Edit` decision order:** boot-precondition → no-mission → persona-transition → persona-path. Full doctrine + table: `GOVERNANCE.md` (Mechanical Enforcement Gates) + ADR 95.
+**`Write|Edit` decision order:** boot-precondition → no-mission → persona-transition → visual-gate → persona-path. Full doctrine + table: `GOVERNANCE.md` (Mechanical Enforcement Gates) + ADR 95/102.
 
-## 9. Available Skills (23)
+## 9. Available Skills (24)
 | Skill | Phase | Purpose |
 |---|---|---|
 | `/lfe-boot` | 0 | Session bootstrap and recovery |
@@ -155,6 +157,7 @@ Mechanical enforcement is **speed-bumps + loudness, not containment** (the harne
 | `/lfe-complexity-check` | 3.2.c | Inspector sub-skill — cyclomatic/cognitive complexity |
 | `/lfe-dep-audit` | 3.2.d | Inspector sub-skill — dependency manifest review + Brain-run audit instruction |
 | `/lfe-mutation-verify` | 3.2.e | Inspector sub-skill — prompt-based mutation reasoning for test quality |
+| `/lfe-visual-check` | 3.2.f | Inspector sub-skill — render the changed UI surface for a human visual sign-off (auto-armed by the Visual Floor) |
 | `/lfe-diagnose` | 3.3 | Bug diagnosis loop (conditional, 1st failure only) |
 | `/lfe-archivist` | 4.1 | Documentation sync and cleanup |
 | `/lfe-hygiene` | 5.1 | Structural audit |

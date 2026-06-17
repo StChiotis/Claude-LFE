@@ -26,6 +26,8 @@ import {
   PROTOCOL_DEBT_PATH,
   PERMISSIONS_PATH,
   GATED_TOOLS,
+  SRC_LANE_GLOB,
+  SRC_LANE_PERSONA,
   buildDenyMessage,
 } from '../persona-path-lock.mjs';
 
@@ -1157,6 +1159,10 @@ describe('constants', () => {
   test('GATED_TOOLS is exactly Write and Edit', () => {
     assert.deepEqual(GATED_TOOLS, ['Write', 'Edit']);
   });
+  test('SRC_LANE_GLOB / SRC_LANE_PERSONA pin the ADR-101 src-lane invariant', () => {
+    assert.equal(SRC_LANE_GLOB, 'src/**');
+    assert.equal(SRC_LANE_PERSONA, 'builder');
+  });
 });
 
 // --- Describe: mission-aware Authorized Scope ------------
@@ -1237,6 +1243,76 @@ describe('main: mission-aware Authorized Scope extension', () => {
     assert.equal(parseEnvelope(result.stdout), null); // no deny envelope
     assert.match(result.stderr, /mission-authorized/i);
     assert.equal(writeFileSpy.calls.length, 0);
+  });
+});
+
+// --- Describe: src-lane invariant (ADR 101) ----------------------------------
+
+describe('main: src-lane invariant — Authorized Scope must not grant src/** to a non-Builder persona (ADR 101)', () => {
+  // The human-rejection rework loop forbids patch-in-place at the finalization
+  // step: the product-code lane src/** is writable ONLY under the Builder
+  // persona. An in-flight mission's Authorized Scope may legitimately widen reach
+  // (docs, a second repo), but it must NOT hand Inspector/Archivist write access
+  // to src/**. LFE-FORCE remains the sole documented escape and is unaffected.
+
+  test('Inspector + Authorized Scope globbing src/** → DENY (closes the patch-in-place door)', async () => {
+    const { result, writeFileSpy } = await runMain(makeWriteRequest({
+      persona: 'Inspector',
+      target: 'src/foo.js',
+      authorizedScope: 'src/**',
+    }));
+    assert.equal(result.exitCode, 0);
+    const env = parseEnvelope(result.stdout);
+    assert.ok(env, 'expected DENY envelope');
+    assert.equal(env.hookSpecificOutput.permissionDecision, 'deny');
+    assert.equal(writeFileSpy.calls.length, 0);
+  });
+
+  test('Archivist + Authorized Scope globbing src/** → DENY (mirror)', async () => {
+    const { result } = await runMain(makeWriteRequest({
+      persona: 'Archivist',
+      target: 'src/foo.js',
+      authorizedScope: 'src/**',
+    }));
+    assert.equal(parseEnvelope(result.stdout)?.hookSpecificOutput?.permissionDecision, 'deny');
+  });
+
+  test('Builder + Authorized Scope globbing src/** → ALLOW (Builder is the sole src-lane persona; persona match wins at step 5)', async () => {
+    const { result } = await runMain(makeWriteRequest({
+      persona: 'Builder',
+      target: 'src/foo.js',
+      authorizedScope: 'src/**',
+    }));
+    assert.equal(result.exitCode, 0);
+    assert.equal(result.stderr, ''); // silent persona-allow at step 5, before the 5.5 extension
+    assert.equal(parseEnvelope(result.stdout), null);
+  });
+
+  test('Inspector + Authorized Scope on a NON-src path → ALLOW (invariant is surgical; only src/** is restricted)', async () => {
+    const { result } = await runMain(makeWriteRequest({
+      persona: 'Inspector',
+      target: '../OtherRepo/file.js',
+      authorizedScope: '../OtherRepo/**',
+    }));
+    assert.equal(result.exitCode, 0);
+    assert.match(result.stderr, /mission-authorized/i);
+    assert.equal(parseEnvelope(result.stdout), null);
+  });
+
+  test('Inspector + src/** in scope + LFE-FORCE in transcript → ALLOW + debt row (escape not stranded)', async () => {
+    const req = makeWriteRequest({
+      persona: 'Inspector',
+      target: 'src/foo.js',
+      authorizedScope: 'src/**',
+      userMessages: ['proceed LFE-FORCE'],
+    });
+    req.files[`${PROJ}/${PROTOCOL_DEBT_PATH}`] = PROTOCOL_DEBT_FIXTURE;
+    const { result, writeFileSpy } = await runMain(req);
+    const env = parseEnvelope(result.stdout);
+    assert.ok(env, 'expected escape envelope');
+    assert.equal(env.hookSpecificOutput.permissionDecision, 'allow');
+    assert.match(env.hookSpecificOutput.permissionDecisionReason, /LFE-FORCE/);
+    assert.equal(writeFileSpy.calls.length, 1, 'debt row written — the invariant falls through to LFE-FORCE, not a dead end');
   });
 });
 

@@ -30,7 +30,7 @@ Built on the [Library-First Engineering](https://github.com/StChiotis/Library-Fi
 |:---|:---|:---|
 | **LFE skills** | `.agents/skills/` + `.claude/skills/` mirror | Full LFE skill set covering bootstrap, planning, building, inspection, archival, hygiene, recovery, and navigation |
 | **Claude Code hooks** | `.claude/hooks/` | Persona-discipline + plan-critique write gates, coordination-file frontmatter validators (with sub-validators per file type), state-aware SessionStart reminder, checkpoint-flip state mutator |
-| **Inspector specialist skills** | `.agents/skills/lfe-*-check/` + `lfe-dep-audit/` + `lfe-mutation-verify/` | Security (OWASP Top-10), performance, complexity, dependency-audit, and mutation-reasoning passes the Inspector runs as in-chat skills |
+| **Inspector specialist skills** | `.agents/skills/lfe-*-check/` + `lfe-dep-audit/` + `lfe-mutation-verify/` + `lfe-visual-check/` | Security (OWASP Top-10), performance, complexity, dependency-audit, and mutation-reasoning passes, plus a visual-rendering pass for a human sign-off, that the Inspector runs as in-chat skills |
 | **statusLine** | `.claude/statusline.mjs` | Live pipeline state rendered below the Claude Code prompt |
 | **LFE protocol docs** | `.docs/protocol/` | PERSONAS, ASSEMBLY_LINE, GOVERNANCE, COORDINATION_FILES, LOOP_ARCHITECTURE |
 | **Sync tooling** | `scripts/` + `.githooks/` | `sync-claude-skills.mjs` + pre-commit drift guard |

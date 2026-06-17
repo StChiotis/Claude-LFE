@@ -72,10 +72,11 @@ The Brain Persona is bound by the contract in [PERSONAS.md](PERSONAS.md), includ
 
 ## 🔄 Correction Cycle Limits
 
-To prevent infinite loops on irreducible failures, two cycle limits are protocol-enforced:
+To prevent infinite loops on irreducible failures, three cycle limits are protocol-enforced:
 
 1. **Pre-build critique cycles** — Max **2 plan revisions** per slice on `BLOCK` verdicts from `/lfe-plan-critique`. The counter is **file-based**: stored in the `revision:` typed frontmatter field of `.plans/plan_critique.md` (schema in [`COORDINATION_FILES.md`](COORDINATION_FILES.md)). Step 0 of `/lfe-plan-critique` reads this field on every invocation — on a 2nd BLOCK (`revision: 2`), the skill halts and presents the Brain with three triage options (revert to PRD / accept WARN with file-recorded `brain_confirmation` / abort mission) instead of running lenses again. A crash between attempts does not reset the counter. See [`LOOP_ARCHITECTURE.md`](LOOP_ARCHITECTURE.md) Scenario 1.4.
 2. **Post-build inspection cycles** — Max **2 consecutive failed inspections** per slice. On the 2nd failure, the Inspector does NOT re-trigger `/lfe-diagnose`; it halts and presents three triage options (accept as known debt / escalate LFE-FORCE / re-plan from scratch). See [`LOOP_ARCHITECTURE.md`](LOOP_ARCHITECTURE.md) Scenario 2.2.
+3. **Finalization-rework rounds** — Max **5 rework rounds** per slice when the Brain rejects at the Inspector's finalization gate. The counter is **file-based**: the `rework_round:` typed field of `.plans/rework_directive.md` (schema in [`COORDINATION_FILES.md`](COORDINATION_FILES.md)), advanced only when the Brain's rejection text changes (its `directive_hash`) — so distinct defects count while a crash-resumed re-run of the same rejection holds steady. This axis is **orthogonal** to limit 2: a rework round writes neither `status: failed` nor a `diagnosis_report.md`, so the inspection Cycle Guard advances on mechanical failures alone. Distinct rework rounds re-traverse Builder → `/lfe-tdd` → Inspector without false-escalating, while a *mechanical* re-failure during a round still escalates via limit 2. On the 6th rejection the Inspector halts to a safe Brain triage menu (accept as a known issue / re-plan the slice / start a fresh mission). Worst case per slice: up to 5 rework rounds, each able to run the limit-2 mechanical sub-loop. See [`LOOP_ARCHITECTURE.md`](LOOP_ARCHITECTURE.md) Scenario 2.4.
 
 The rationale: a structural problem resists fixing by repeated tweaks at the same level. The cycle limit forces escalation to a higher level (Brain triage, plan re-design, or accepted debt) instead of loop spinning that consumes tokens without converging.
 
@@ -117,7 +118,10 @@ Beyond the persona path-lock and the Cat-D validators, the framework ships a fam
 | **C2a — boot-precondition** (`boot-precondition-gate.mjs`) | PreToolUse Write/Edit | substantive change refused until `/lfe-boot` ran this session (two-file session handshake) |
 | **C2b — scout-boundary** (in `skill-invocation-gate.mjs`) | UserPromptSubmit | `/lfe-scout` refused mid-mission |
 | **C3 — persona-transition** (`persona-transition-guard.mjs`) | PreToolUse Write/Edit | a change to the Active-Persona value needs an official skill-dispatched marker |
+| **visual-gate** (`visual-gate.mjs`) | PreToolUse Write/Edit | a visual slice's Inspector→Archivist close needs `visual_confirmed` + `visual_signoff` in `inspection_report.md` — a **hard floor** (denies even under `warn`; ADR 102) |
 | **C4 — no-mission** (`no-mission-gate.mjs`) | PreToolUse Write/Edit | substantive change at a completed/idle slate with no coordination trail |
 | **mission-aware path-lock** (`persona-path-lock.mjs`) | PreToolUse Write/Edit | an in-flight mission's `Authorized Scope` row extends the write scope (closes G5) |
 
-`Write|Edit` decision order: **boot-precondition → no-mission → persona-transition → persona-path**. Warn events append to a gitignored local telemetry log; the Brain reviews accumulated evidence before promoting any gate to `block` (per-gate, manual — ADR 87 family).
+`Write|Edit` decision order: **boot-precondition → no-mission → persona-transition → visual-gate → persona-path**. Warn events append to a gitignored local telemetry log; the Brain reviews accumulated evidence before promoting any gate to `block` (per-gate, manual — ADR 87 family).
+
+**Exception — the `visual-gate` floor (ADR 102).** Unlike the warn-first family, the visual-gate's floor denies *unconditionally* — even under `warn` posture — because a warn-only visual gate would let the unverified-close anti-pattern straight through, defeating its purpose. It keeps the family's asymmetric fail-safe ALLOW on every ambiguous path (unreadable substrate, non-visual slice, escalated/failed status), so an ambiguous path always allows and a legitimate close stays unblocked.

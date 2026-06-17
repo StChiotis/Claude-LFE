@@ -129,6 +129,16 @@ export const PERMISSIONS_PATH = '.agents/permissions.json';
 export const GATED_TOOLS = ['Write', 'Edit'];
 export const SCHEMA_REFERENCE = '.docs/protocol/PERSONAS.md + .agents/permissions.json';
 
+// Named invariant (ADR 101): the product-code lane is writable ONLY under the
+// Builder persona. An IN-FLIGHT mission's Authorized Scope may widen reach to
+// docs or a second repo, but it must never hand a non-Builder persona
+// (Inspector/Archivist) write access to src/** — that is the "patch-in-place at
+// the finalization step" door the human-rejection rework loop closes. Scoped to
+// the Authorized-Scope extension only; the persona's own write_constraints
+// (Step 5) and the LFE-FORCE escape (Step 6) are unaffected.
+export const SRC_LANE_GLOB = 'src/**';
+export const SRC_LANE_PERSONA = 'builder';
+
 // --- Re-exports from be-escape.mjs (backward-compat shim) -------
 
 export {
@@ -288,11 +298,21 @@ export async function main({ stdinText, readFileText, readFileTail, writeFileTex
   if (missionInFlight) {
     const authorizedScope = extractAuthorizedScope(entranceCardText);
     if (authorizedScope.length > 0 && matchAnyGlob(target, authorizedScope)) {
-      return {
-        exitCode: 0,
-        stdout: '',
-        stderr: `[LFE Path-Lock] mission-authorized write — ${personaRaw} → ${target} (active-mission Authorized Scope). ALLOW.\n`,
-      };
+      // src-lane invariant (ADR 101): Authorized Scope must NOT grant a
+      // non-Builder persona write access to src/**. If the target is in the
+      // product-code lane and the persona is not Builder, do NOT take the
+      // mission-scope ALLOW — fall through to the LFE-FORCE escape / deny path
+      // below (LFE-FORCE remains the sole documented way to patch src under a
+      // non-Builder persona, and still files PROTOCOL_DEBT).
+      const srcLaneUnderNonBuilder =
+        matchGlob(target, SRC_LANE_GLOB) && persona !== SRC_LANE_PERSONA;
+      if (!srcLaneUnderNonBuilder) {
+        return {
+          exitCode: 0,
+          stdout: '',
+          stderr: `[LFE Path-Lock] mission-authorized write — ${personaRaw} → ${target} (active-mission Authorized Scope). ALLOW.\n`,
+        };
+      }
     }
   }
 

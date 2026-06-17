@@ -87,6 +87,7 @@ test('helper: isExecutionTier returns true for execution-tier filenames', () => 
   assert.equal(isExecutionTier('.plans/tdd_report.md'), true);
   assert.equal(isExecutionTier('.plans/inspection_report.md'), true);
   assert.equal(isExecutionTier('.plans/diagnosis_report.md'), true);
+  assert.equal(isExecutionTier('.plans/rework_directive.md'), true);
   assert.equal(isExecutionTier('.plans/checks/security_findings.md'), true);
 });
 
@@ -456,6 +457,106 @@ kind: sub-skill
 `;
   const result = await main({
     stdinText: makeStdin('.plans/checks/security_findings.md'),
+    readFileText: fakeReader(text),
+    resolveSpecialist: neverDispatchSpecialist(),
+  });
+  assert.equal(result.exitCode, 2);
+  assert.match(result.stderr, /Missing required field: slice/);
+});
+
+// --- rework_directive.md execution-tier (ADR 101) -------------------------
+// The finalization-rework sentinel is execution-tier: `slice` is mandatory
+// (Builder matches it against active_plan's slice), while the rework typed
+// fields (rework_round, directive_hash) ride below `source:` and are tolerated
+// by the base validator with no status-enum change.
+
+test('base: rework_directive.md with slice + rework typed fields → exit 0 (execution-tier, typed fields tolerated)', async () => {
+  const text = `---
+phase: inspector
+step: rework
+status: complete
+timestamp: 2026-06-16T22:00:00Z
+source: .plans/inspection_report.md
+slice: 1
+rework_round: 2
+directive_hash: a1b2c3d4
+---
+
+## Rework Directive
+Observed vs expected mismatch on the changed surface.
+`;
+  const result = await main({
+    stdinText: makeStdin('.plans/rework_directive.md'),
+    readFileText: fakeReader(text),
+    resolveSpecialist: neverDispatchSpecialist(),
+  });
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.stderr, '');
+});
+
+test('base: rework_directive.md WITHOUT slice → exit 2 (execution-tier slice rule fires)', async () => {
+  const text = `---
+phase: inspector
+step: rework
+status: complete
+timestamp: 2026-06-16T22:00:00Z
+source: .plans/inspection_report.md
+rework_round: 1
+directive_hash: a1b2c3d4
+---
+`;
+  const result = await main({
+    stdinText: makeStdin('.plans/rework_directive.md'),
+    readFileText: fakeReader(text),
+    resolveSpecialist: neverDispatchSpecialist(),
+  });
+  assert.equal(result.exitCode, 2);
+  assert.match(result.stderr, /Missing required field: slice/);
+});
+
+// --- inspection_report.md visual typed fields (ADR 102) -------------------
+// The visual-confirmation typed fields (visual_confirmed, visual_signoff) ride
+// below source: on inspection_report.md and are tolerated by the base validator
+// exactly like ADR 101's rework_round/directive_hash — no status-enum change, no
+// specialist. inspection_report.md is execution-tier, so `slice` stays mandatory.
+
+test('base: inspection_report.md with visual_confirmed + visual_signoff + slice → exit 0 (typed fields tolerated)', async () => {
+  const text = `---
+phase: inspector
+step: inspection
+status: passed
+timestamp: 2026-06-17T12:00:00Z
+source: .plans/tdd_report.md
+slice: 2
+visual_confirmed: 2026-06-17T12:00:00Z
+visual_signoff: LGTM-2026-06-17
+---
+
+## Verification Results
+- Logic match: PASS
+`;
+  const result = await main({
+    stdinText: makeStdin('.plans/inspection_report.md'),
+    readFileText: fakeReader(text),
+    resolveSpecialist: neverDispatchSpecialist(),
+  });
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.stderr, '');
+});
+
+test('base: inspection_report.md with visual typed fields but WITHOUT slice → exit 2 (execution-tier slice rule fires)', async () => {
+  const text = `---
+phase: inspector
+step: inspection
+status: passed
+timestamp: 2026-06-17T12:00:00Z
+source: .plans/tdd_report.md
+visual_confirmed: 2026-06-17T12:00:00Z
+visual_signoff: LGTM-2026-06-17
+---
+`;
+  const result = await main({
+    stdinText: makeStdin('.plans/inspection_report.md'),
     readFileText: fakeReader(text),
     resolveSpecialist: neverDispatchSpecialist(),
   });

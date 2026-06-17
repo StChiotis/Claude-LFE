@@ -4,5 +4,6 @@
   "no-mission": "warn",
   "persona-transition": "warn",
   "scout-boundary": "warn",
-  "skill-eval": "warn"
+  "skill-eval": "warn",
+  "visual-gate": "warn"
 }

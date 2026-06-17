@@ -14,6 +14,7 @@ Configure which specialist sub-skills the Inspector invokes for this project. Di
 | `lfe-complexity-check` | false | Disabled by default. Enable per-slice via `active_plan.md` `## Inspector Overrides` when the slice introduces substantial logic — long functions, deep nesting, or branching that would benefit from a cognitive-load audit. |
 | `lfe-dep-audit` | true | Dependency file review + human-run audit instruction (`npm audit`). |
 | `lfe-mutation-verify` | false | Disabled by default. Enable per-slice via `## Inspector Overrides` for changes to high-correctness-stakes code where you want to know whether existing tests would actually catch a bug — high-token sub-skill, target use is small and selective. |
+| `lfe-visual-check` | false | Off by default — inert on a non-visual project. Renders the changed UI surface and presents it for a human visual sign-off. **Auto-armed by the Visual Floor** whenever a changed file matches a visual file class; the floor is a minimum (an override leaves it armed). |
 
 ## How to Override Per-Mission
 
@@ -45,6 +46,7 @@ When multiple sub-skills are enabled, Inspector runs them in this fixed sequence
 3. `lfe-complexity-check`
 4. `lfe-dep-audit`
 5. `lfe-mutation-verify`
+6. `lfe-visual-check`
 
 Each sub-skill writes its findings to `.plans/checks/<sub-skill-name>_findings.md`. Inspector aggregates all outputs into `critique.md` under labelled sections.
 
@@ -64,3 +66,13 @@ This is the single, canonical dispatch mechanism. Every `lfe-*-check` sub-skill 
 2. **CI workflow files** — `.github/workflows/**`. Workflow YAMLs run with repository tokens, so they are the highest-risk surface in the framework-infra carve-out; any change must get the security lens. **Dormant** until the repo adds its first workflow file. *(closes F1)*
 
 **Floor semantics:** the floor is a *minimum*. A per-mission `## Inspector Overrides` block may raise `lfe-security-check` to `true` (redundant for these paths) but may **not** lower it below the floor — an `lfe-security-check: false` override is ignored, with a warning to the Brain, for any slice that touches a floor path class. The Inspector evaluates the floor after reading the config table + overrides, when computing the final enabled set.
+
+## Visual Floor Rules
+
+`lfe-visual-check` has a **floor** that mirrors the Security Floor: it arms regardless of the config table above or any per-mission override whenever a slice's changed files (from `.plans/builder_done.md`) include a **visual file class**. The floor is a *minimum* — a per-mission `## Inspector Overrides` entry may raise `lfe-visual-check` to `true` (redundant) but an `lfe-visual-check: false` override is ignored, with a warning to the Brain, for any slice that touches a visual file class.
+
+**Why a floor:** a UI change that closes on a green *technical* pass alone is the exact anti-pattern the visual gate exists to kill. The floor guarantees a human visual sign-off is obtained before such a slice closes — enforced mechanically by the `visual-gate` hook, which denies the Inspector→Archivist transition until `inspection_report.md` carries both `visual_confirmed` and `visual_signoff`.
+
+### Visual file classes (`UI_GLOBS`)
+
+The mechanical source of truth for "what counts as visual" is the `UI_GLOBS` literal in `.claude/hooks/visual-gate.mjs` (adopter-extendable). In prose, the default web / SPA / static set is: stylesheets (CSS, SCSS, Sass, Less, Stylus); markup and templates (HTML, Vue, Svelte, Astro, Handlebars, EJS, Pug, Nunjucks); component and view files (JSX, TSX); image assets (PNG, JPG, GIF, SVG, WebP, AVIF, ICO); and component / view / page / template / style path classes. Native-mobile and game-engine UI classes are an adopter extension point beyond this default set.

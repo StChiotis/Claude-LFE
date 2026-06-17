@@ -2,10 +2,12 @@
 
 > **What this file is.** These ADRs document the architectural decisions behind the Claude Code integration substrate that ships with Claude-LFE — the enforcement hooks, the statusLine, the Inspector specialist dispatch, the eval harness, the drift/sync tooling. They explain the **why** behind every file under `.claude/` and `.githooks/`. Read this when you are modifying the framework itself.
 > **Frozen for adopters.** Building a product on Claude-LFE? Record your product's architecture decisions in [`architecture-decisions.md`](./architecture-decisions.md) — it starts empty at ADR 1. Treat this file as read-only framework history; the inline `(ADR N)` citations throughout `.claude/` resolve to the numbered entries here.
-> **Numbering.** These entries keep their original sequence numbers (81 and up) as a frozen historical set; a new framework decision increments the highest number here. The sequence runs 81–100; **ADR 88 (Inspector subagent dispatch) was superseded by ADR 93** before this file was split out, so it is kept as a short stub — its full decision content lives in the index row above and in ADR 93. The Full ADR Bodies section therefore reads 89 → 88 (stub) → 87 by design.
+> **Numbering.** These entries keep their original sequence numbers (81 and up) as a frozen historical set; a new framework decision increments the highest number here. The sequence runs 81–102; **ADR 88 (Inspector subagent dispatch) was superseded by ADR 93** before this file was split out, so it is kept as a short stub — its full decision content lives in the index row above and in ADR 93. The Full ADR Bodies section therefore reads 89 → 88 (stub) → 87 by design.
 
 | ADR | Title | Status | What it governs |
 |---|---|---|---|
+| 102 | Visual verification competency — `lfe-visual-check` sub-skill + the `visual-gate` hard floor | Accepted | Gives the Inspector eyes: a new opt-in, artifact-free sub-skill (`lfe-visual-check`) renders the changed UI surface and presents it for a human visual sign-off, plus a new enforcement hook (`visual-gate.mjs`) that **denies** the Inspector→Archivist close of a *visual slice* until `inspection_report.md` carries `visual_confirmed` + `visual_signoff`. The framework's first **unconditional-deny** floor (it denies even under `warn` posture — a deliberate, scoped departure from the ADR-95 warn-first family), kept safe by asymmetric fail-safe ALLOW on every ambiguous path. Auto-arms via a Visual Floor on any `UI_GLOBS` touch; typed fields ride below `source:` with no status-enum change; a visual rejection reuses the ADR-101 rework loop. |
+| 101 | Human-rejection finalization-rework loop + `src`-only-under-Builder invariant | Accepted | Adds the missing "Brain rejects at finalization → re-enter Builder" branch (Inspector Step 8b) as a re-entrant rework loop tracked in a new `.plans/rework_directive.md` sentinel (typed `rework_round` + `directive_hash`), capped at 5 (GOVERNANCE Correction Cycle Limit 3) and orthogonal to the inspection Cycle Guard. Names the `src/**`-writable-only-under-Builder path-lock invariant that closes the patch-in-place door (scoped to the Authorized-Scope extension; LFE-FORCE unaffected). No lifecycle status-enum change. |
 | 100 | Framework vs product ADR split — two decision logs | Accepted | Splits the single ADR file: this `framework-decisions.md` holds the framework substrate ADRs (81+, frozen), while `architecture-decisions.md` becomes the adopter's product log starting at ADR 1. Numbers kept (no renumber); inline `(ADR N)` citations resolve here. |
 | 99 | Self-Measurement Pivot — retire the cost log (cost→quality), decouple + self-stamp the eval cadence, record the eval model | Accepted | The framework's self-measurement pivots cost→quality: the skill-accuracy scorecard is the sole surface (the token-budget cost log is retired); `/lfe-skill-eval` self-gates to every 3rd Hygiene sweep (≈ 15 sessions) off the scorecard's own last-run session stamp, on-demand primary; each eval records its producing (current-session) model. In part supersedes ADR 98 (its eval-cadence + token-budget trade-off bullets). |
 | 98 | Skill-accuracy eval harness — isolated-subagent runner + deterministic grader (scoped complement to ADR 93) | Accepted *(cadence + token-budget trade-offs → ADR 99)* | The five prompt-based reasoning skills (security/perf/complexity/mutation + plan-critique) gain a measured catch-rate: a deterministic grader (`skill-eval.mjs`, joins `npm test`) + a fixture corpus with telegraph/saturation guards + the Hygiene-dispatched `/lfe-skill-eval` runner (isolated Agent/Task-tool subagents, pass-rate @ k=5) → `skill-eval-scorecard.md`, fed by a hash-pinned warn-first pre-commit gate. Complements ADR 93 (in-chat dispatch for production inspection) — isolated subagents are scoped to *evaluation*, where independent contexts are the precondition for an honest consistency/saturation read. |
@@ -30,6 +32,68 @@
 ---
 
 ## Full ADR Bodies (most recent first)
+
+---
+## ADR 102: Visual verification competency — lfe-visual-check sub-skill + the visual-gate hard floor (2026-06-17)
+
+**Status:** Accepted
+**Date:** 2026-06-17
+
+**Context**
+
+The Inspector can assert a *technical* pass — logic matches the domain, baselines hold, tests are green — but it has no way to *see* the rendered result. A UI change can pass mechanically while the screen is visibly wrong. Observed downstream: a visual bug "fixed" in place at the finalization step, unverified, for hours, because nothing rendered the surface and nothing forced a human to look before the change closed. Slice 1 (ADR 101) gave a human rejection a scripted path back to the Builder; what remained missing was (a) the *capability to see*, and (b) a mechanism that makes a human visual sign-off mandatory before a UI change can close.
+
+**Decision**
+
+Two coupled pieces, both pure framework machinery, inert on a non-visual project.
+
+1. **`lfe-visual-check`** — a new opt-in Inspector sub-skill. It renders the changed UI surface (preferred preview renderer → browser renderer → a manual instruction that names the screen when no renderer or preview target exists), reasons over the result, and writes a text findings file (`.plans/checks/visual_findings.md`) carrying a human-action instruction and a sign-off token. It is **artifact-free** (saves no image files, keeping the blank-canvas seal) and **verdict-free** (the human alone declares the visual verdict). It **auto-arms** via a **Visual Floor** whenever a changed file matches a visual class (`UI_GLOBS`, the single literal source of truth in the hook); the floor is a minimum an override leaves armed, mirroring the Security Floor.
+
+2. **`visual-gate.mjs`** — a new `PreToolUse(Write|Edit)` enforcement hook on the Inspector→Archivist transition. For a *visual slice* it **denies** the close unless `inspection_report.md` carries both `visual_confirmed` (timestamp) and `visual_signoff` (token). The two are typed fields riding below `source:`, tolerated by the base validator with no status-enum change (the ADR-101 precedent); the token is agent-transcribed — the same trust model as `brain_confirmation` (a transcription convention, not a non-forgeable mechanism). The unified three-outcome finalization gate (Inspector Step 8) reads: approve + visual present → Archivist; approve but visual absent → obtain the sign-off first; reject → the ADR-101 rework loop.
+
+**The warn-first departure (load-bearing).** Every ADR-95 gate ships warn-first. The `visual-gate` floor is the framework's **first unconditional-deny** gate: it denies *even under `warn` posture*. This is deliberate — a warn-only visual gate would let the very anti-pattern it exists to kill (an unverified visual close) proceed on a mere warning, defeating its purpose, exactly as the Security Floor ignores an `lfe-security-check: false` override. The departure is bounded by the family's **asymmetric fail-safe ALLOW**: the gate stands aside on every ambiguous path (unreadable card / `builder_done.md` / `inspection_report.md`; a non-visual slice; any transition other than inspector→archivist; `status: escalated` or `failed` — the debt/triage paths), so it can never deadlock a legitimate close. The `visual-gate` key in `enforcement-posture.json` is registered for gate-inventory parity; the floor does not consult it.
+
+**Considered Alternatives**
+
+- *A warn-first visual gate (consistent with ADR 95)* — declined: a warning the agent can walk past does not stop the unverified close; the floor has to hold to be worth building.
+- *A new `awaiting_visual` lifecycle status* — declined: it forces `STATUS_ALLOWED` + validator-test + enum churn and a checkpoint-flip reversal problem, exactly as ADR 101 found. Typed fields (`visual_confirmed` / `visual_signoff`) sidestep all of it.
+- *Persisted screenshots in a swept location* — declined: the render MCPs cannot reliably place a binary in a swept path, and a persisted image breaks the blank-canvas seal. Text-only reasoning plus a human look is more reliable and self-cleaning.
+- *Auto-detecting the running app* — declined: the preview surface is declared in the plan (`## UI Surface`) or handled by the manual fallback; auto-detection is out of scope.
+
+**Consequences**
+
+- A UI-touching slice no longer closes on a green technical pass alone — a human visual sign-off is a hard floor, enforced mechanically.
+- A visual rejection reuses the ADR-101 rework loop, so a rejected visual defect travels back through the Builder and is fully re-verified rather than patched in place.
+- The framework gains its first unconditional-deny gate, documented here as a scoped departure from warn-first; the asymmetric fail-safe ALLOW keeps it from ever deadlocking.
+- Inert on a non-visual project: the registry entry is off by default, the floor arms only on a `UI_GLOBS` touch, and no image binary is ever persisted — the starter re-seals to a clean blank canvas.
+- `UI_GLOBS` lives as one adopter-extendable literal in the hook; the default web / SPA / static set is documented in `inspector-config.md` prose, with native-mobile / game-engine classes called out as an extension point.
+
+---
+## ADR 101: Human-rejection finalization-rework loop + src-only-under-Builder invariant (2026-06-16)
+
+**Status:** Accepted
+**Date:** 2026-06-16
+
+**Context**
+
+The Inspector's finalization step (Step 8) scripted only "approval → Archivist." A Brain rejection at finalization — the common case when a defect (most often visual) survives a green *technical* pass — had no scripted path back into the pipeline. Observed in a downstream project: the session patched `src/**` in place at the final step, unverified, for hours, because nothing returned the work to the Builder and nothing forbade the in-place edit. The mechanical Cycle Guard (Correction Cycle Limit 2) covers Inspector-detected *mechanical* failures, not human finalization rejections.
+
+**Decision**
+
+Add a finalization rework loop. On REJECT, the Inspector (Step 8b) writes a new execution-tier coordination file `.plans/rework_directive.md` carrying typed fields `rework_round` and `directive_hash`, deletes any stale same-slice `diagnosis_report.md`, resets the per-slice checkboxes, and flips the persona to Builder. The Builder re-implements the directive (precedence over the diagnosis-retry branch); the slice re-traverses Builder → `/lfe-tdd` → Inspector → finalize, re-entrant up to **5 rounds** (GOVERNANCE Correction Cycle Limit 3). The counter advances on a `directive_hash` change, making it exactly-once across a crash. The loop is **orthogonal** to the Cycle Guard: a rework round writes neither `status: failed` nor a diagnosis report, so the inspection report stays `status: passed` and the lifecycle status enum is unchanged. To close the patch-in-place door structurally, a named path-lock invariant makes `src/**` writable only under the Builder persona, scoped to the Authorized-Scope extension and placed before the LFE-FORCE escape (which stays the sole documented break-glass).
+
+**Considered Alternatives**
+
+- *A new `rework_requested` lifecycle status* — declined: it forces `STATUS_ALLOWED` + validator-test + `COORDINATION_FILES` enum churn, creates a Cycle-Guard determination ambiguity, and (because `checkpoint-flip` already fired on the prior `status: passed`) cannot reverse the `inspect` checkbox. The typed-field sentinel sidesteps all of it.
+- *A blanket pre-escape `src/**` DENY in the path-lock* — declined: placed ahead of the LFE-FORCE escape it would strand the documented break-glass. Scoping the invariant to the Authorized-Scope extension keeps LFE-FORCE intact.
+- *Reuse the Cycle Guard's 2-strike counter for rework* — declined: distinct cosmetic rounds would false-escalate on the 2nd rejection. A separate file-based counter keeps the two axes independent.
+
+**Consequences**
+
+- A Brain rejection at finalization re-enters the Builder and re-verifies; ten distinct defects each get the full pipeline, while the same defect mechanically re-failing still escalates via Limit 2.
+- Crash recovery is deterministic — a present `rework_directive.md` resumes the Builder.
+- Patch-in-place at the final step is a path-lock DENY for any non-Builder persona targeting `src/**`.
+- No status-enum change, so `checkpoint-flip`, the Archivist status branch, and the Cat-D validator are untouched. The sentinel is on both cleanup tiers, so the canvas re-seals clean at mission end.
 
 ---
 ## ADR 100: Framework vs product ADR split — two decision logs (2026-06-06)

@@ -3,10 +3,10 @@
 | Category | Status / Value |
 | :--- | :--- |
 | **Integrity Score** | 🟢 [Integrity: 100%] |
-| **Mission State** | [BLANK CANVAS] — fresh Claude-LFE starter; no product domain loaded yet. Run `/lfe-boot`; on a blank canvas it routes straight to `/lfe-extract-domain` to capture your product's domain (Day 0). |
-| **Active Persona** | — _(none — awaiting Day-0)_ |
-| **Active Mission** | (none — run `/lfe-boot` → `/lfe-extract-domain` to define your first mission) |
-| **Pipeline Phase** | (none — Day 0) |
+| **Mission State** | [BLANK CANVAS] — fresh scaffold; no product domain loaded yet. |
+| **Active Persona** | 🏛️ Architect |
+| **Active Mission** | *(none — blank-canvas starter)*. Run `/lfe-boot`, then `/lfe-extract-domain`, to load your product domain and start delivering. |
+| **Pipeline Phase** | Day 0 — awaiting `/lfe-extract-domain` (no mission in flight) |
 | **Coordination Files** | 01 ⬜  02 ⬜  03 ⬜  plan ⬜  plan_critique ⬜  build ⬜  tdd ⬜  critique ⬜  inspect ⬜  *(clean)* |
 | **Session Count** | 0 |
 | **Last Architecture Sweep** | none yet (fresh starter) |
@@ -32,14 +32,15 @@
 12. **UserPromptSubmit skill-invocation gate**: `.claude/hooks/skill-invocation-gate.mjs` denies agent-only skills typed directly by the Brain. Block-strict posture.
 13. **Plan-critique gate PreToolUse hook**: `.claude/hooks/plan-critique-gate.mjs` gates `src/**` writes on plan critique verdict. Block-with-Escape posture.
 14. **PostToolUse checkpoint-flip hook**: `.claude/hooks/checkpoint-flip.mjs` auto-flips coordination file checkboxes in the Coordination Files row above on every `.plans/*.md` Write. State-mutator silent-ALLOW posture.
-15. **Inspector specialist skills (skill-based dispatch)**: the Inspector runs 5 specialist passes — security, perf, complexity, dep-audit, mutation — as in-chat skills (`.agents/skills/lfe-*-check/` + `.claude/skills/` mirror), writing findings to `.plans/checks/`. Configured via `.docs/quality/inspector-config.md`.
+15. **Inspector specialist skills (skill-based dispatch)**: the Inspector runs 6 specialist passes — security, perf, complexity, dep-audit, mutation, and visual rendering — as in-chat skills (`.agents/skills/lfe-*-check/` + `lfe-visual-check/` + `.claude/skills/` mirror), writing findings to `.plans/checks/`. Configured via `.docs/quality/inspector-config.md`.
 16. **PostToolUse pipeline_status narrative guard**: `.claude/hooks/pipeline-status-narrative-check.mjs` scans every `pipeline_status.md` Write for generic personal/dev-local path shapes (`C:\Users\<name>`, `/home/<name>`, `/Users/<name>`, `~/<path>` — no hardcoded username) and emits a warning on a hit. Warn-only / silent-ALLOW posture (ADR 86 sibling of checkpoint-flip); never blocks. Mechanically enforces the O-S2.A1 convention (ADR 94).
 17. **C1 terminal git posture gate** (PreToolUse Bash): `.claude/hooks/bash-posture-gate.mjs` — two-tier (tier-1 mutating git needs a mission; tier-2 merge/push-to-`main`/force/legal-tag needs typed `MERGE-OK`); `git-command-classifier` lib. Warn-first (`enforcement-posture.json` key `bash-posture`). ADR 95.
 18. **C2a boot-precondition gate** (PreToolUse Write|Edit): `.claude/hooks/boot-precondition-gate.mjs` — refuses substantive change until `/lfe-boot` ran this session (two-file `.session-id`/`.session-booted` handshake). Warn-first (key `boot-precondition`). ADR 95.
 19. **C2b scout-boundary guard** (UserPromptSubmit, in `skill-invocation-gate.mjs`): `/lfe-scout` refused mid-mission. Warn-first (key `scout-boundary`). ADR 95.
 20. **C3 persona-transition guard** (PreToolUse Write|Edit): `.claude/hooks/persona-transition-guard.mjs` — gates the Active-Persona *value* change in `pipeline_status.md`; official skill-dispatched transitions drop `.plans/.persona-transition`. Warn-first (key `persona-transition`). ADR 95.
 21. **C4 no-mission gate** (PreToolUse Write|Edit): `.claude/hooks/no-mission-gate.mjs` — refuses substantive change at `MISSION COMPLETE` with no coordination trail. Warn-first (key `no-mission`). ADR 95.
-22. **Mission-aware path-lock + enforcement substrate**: `persona-path-lock.mjs` honors an in-flight mission's `Authorized Scope` row (closes G5). Shared substrate: `.claude/lib/enforcement-context.mjs`, `.claude/lib/enforcement-telemetry.mjs` (gitignored JSONL), `.claude/enforcement-posture.json` (per-gate warn|block promotion). `Write|Edit` chain order: boot-precondition → no-mission → persona-transition → persona-path. **Doctrine: speed-bumps, not containment** (ADR 95).
+22. **Mission-aware path-lock + enforcement substrate**: `persona-path-lock.mjs` honors an in-flight mission's `Authorized Scope` row (closes G5). Shared substrate: `.claude/lib/enforcement-context.mjs`, `.claude/lib/enforcement-telemetry.mjs` (gitignored JSONL), `.claude/enforcement-posture.json` (per-gate warn|block promotion). `Write|Edit` chain order: boot-precondition → no-mission → persona-transition → visual-gate → persona-path. **Doctrine: speed-bumps, not containment** (ADR 95).
+23. **visual-gate hard floor** (PreToolUse Write|Edit): `.claude/hooks/visual-gate.mjs` — denies the Inspector→Archivist close of a *visual slice* (changed files match `UI_GLOBS`) until `inspection_report.md` carries `visual_confirmed` + `visual_signoff`. The framework's first **unconditional-deny** floor (holds even under `warn`; key `visual-gate` is gate-inventory parity only), with asymmetric fail-safe ALLOW on every ambiguous path (unreadable substrate, non-visual slice, escalated/failed status). ADR 102.
 
 ---
 
