@@ -15,6 +15,12 @@ import { readStdinAll } from '../lib/stdin-reader.mjs';
 export { parseEntranceCard };
 
 const MAX_CONTEXT_CHARS = 400;
+
+// Entrance-card contract warn threshold (ADR 103) — boot-time self-report tier.
+// Mirrors BUDGET_WARN_CHARS in pipeline-status-narrative-check.mjs (kept as a
+// local literal so this load-bearing SessionStart hook stays dependency-light,
+// same rationale as SESSION_ID_PATH below).
+export const BUDGET_WARN_CHARS = 10_000;
 const FALLBACK_TEXT =
   '[LFE] Mission state could not be read from pipeline_status.md. Run /lfe-boot to re-orient.';
 
@@ -163,7 +169,7 @@ function renderUnparsed({ s, p, n, rawState }) {
   return `[LFE] Mission state could not be parsed from pipeline_status.md (got: "${rawState ?? s}"). Run /lfe-boot to re-orient. If this persists, inspect the entrance card for renamed row labels.`;
 }
 
-export function render(entrance, classification) {
+export function render(entrance, classification, cardChars) {
   const { variant, planFiles, rawState } = classification;
   const ctx = {
     s: entrance.missionState,
@@ -182,6 +188,13 @@ export function render(entrance, classification) {
     if (due.overdue) {
       text += ` ⚠️ Architecture sweep overdue by ${due.gapSessions} sessions — schedule /lfe-hygiene at the next mission boundary.`;
     }
+  }
+
+  // ADR 103 over-budget banner. `cardChars` is an OPTIONAL third param — when
+  // absent (every pre-existing call site) the banner is skipped and output stays
+  // byte-identical (warn-and-log posture; backward-compatible by construction).
+  if (typeof cardChars === 'number' && cardChars > BUDGET_WARN_CHARS) {
+    text += ` ⚠️ Entrance card over budget (${Math.round(cardChars / 1000)}k/12k hard) — verify-then-trim at the next close (ADR 103).`;
   }
 
   return capLength(text);
@@ -203,7 +216,9 @@ export async function main({ projectDir, readFileText, listPlansFn, writeFileTex
     const entrance = parseEntranceCard(entranceText);
     const plansFilenames = await listPlansFn(join(projectDir, '.plans'));
     const classification = classifyState(entrance, plansFilenames);
-    return render(entrance, classification);
+    // ADR 103: card size (CRLF-normalized) feeds the over-budget boot banner.
+    const cardChars = String(entranceText ?? '').replace(/\r\n/g, '\n').length;
+    return render(entrance, classification, cardChars);
   } catch {
     return FALLBACK_TEXT;
   }

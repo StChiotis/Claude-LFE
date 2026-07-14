@@ -32,6 +32,12 @@ import { normalizePath } from '../lib/be-escape.mjs';
 
 const PIPELINE_STATUS_FILENAME = 'pipeline_status.md';
 
+// Entrance-card contract warn threshold (ADR 103). This hook is the WARN tier —
+// it fires the moment an over-budget card is WRITTEN, in-session; the HARD gate
+// (12,000) is scripts/check-entrance-card.mjs at pre-commit time. Chars are
+// counted after \r\n → \n normalization so Windows/Unix checkouts measure alike.
+export const BUDGET_WARN_CHARS = 10_000;
+
 // Generic personal/dev-local path-shape detectors. Each entry is { label, re }.
 // Matches the SHAPE (a home/user-profile root followed by a name segment), never
 // a specific username. `re` is global+case-insensitive for per-line scanning.
@@ -75,6 +81,16 @@ export function scanForPersonalPaths(text) {
     }
   }
   return findings;
+}
+
+function buildBudgetWarning(length) {
+  return (
+    `[LFE M5.S3] pipeline_status.md budget-guard: ${length} chars > ${BUDGET_WARN_CHARS} ` +
+    `(warn-only — write NOT blocked).\n` +
+    `  Entrance-card contract (ADR 103): current state + ≤3 Recent Missions pointers only; ` +
+    `history belongs in CHANGELOG.md. Trim at the next Archivist close (verify-then-trim); ` +
+    `the hard gate fails at 12,000 via npm run check:entrance-card.\n`
+  );
 }
 
 function buildWarning(findings) {
@@ -130,11 +146,18 @@ export async function main({ stdinText, readFileText, now, env }) {
   }
 
   // 4. Scan → warn on hit, silent on clean. ALWAYS exit 0; NEVER a deny envelope.
+  //    Two independent warn lanes (ADR 103 added the budget lane): personal-path
+  //    shapes + the entrance-card budget. Both advisory; the hard gate is
+  //    scripts/check-entrance-card.mjs at commit time.
   const findings = scanForPersonalPaths(writtenText);
-  if (findings.length === 0) {
+  const pathWarning = findings.length > 0 ? buildWarning(findings) : '';
+  const normalizedLength = String(writtenText ?? '').replace(/\r\n/g, '\n').length;
+  const budgetWarning =
+    normalizedLength > BUDGET_WARN_CHARS ? buildBudgetWarning(normalizedLength) : '';
+  if (pathWarning === '' && budgetWarning === '') {
     return { exitCode: 0, stdout: '', stderr: '' };
   }
-  return { exitCode: 0, stdout: '', stderr: buildWarning(findings) };
+  return { exitCode: 0, stdout: '', stderr: pathWarning + budgetWarning };
 }
 
 // --- CLI wrapper (production I/O wiring) --------------------------------------

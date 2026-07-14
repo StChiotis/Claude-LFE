@@ -1,16 +1,21 @@
 # 🏛️ LFE Mission Control (Entrance Card)
 
+> Bounded by the **Entrance-card contract** (GOVERNANCE § Retention Policy; **ADR 103**): current state only · ≤ 12,000 chars · ≤ 3 Recent Missions pointers · mission history lives in the CHANGELOG lane, never here.
+
 | Category | Status / Value |
 | :--- | :--- |
 | **Integrity Score** | 🟢 [Integrity: 100%] |
 | **Mission State** | [BLANK CANVAS] — fresh scaffold; no product domain loaded yet. |
-| **Active Persona** | 🏛️ Architect |
+| **Active Persona** | Architect |
 | **Active Mission** | *(none — blank-canvas starter)*. Run `/lfe-boot`, then `/lfe-extract-domain`, to load your product domain and start delivering. |
 | **Pipeline Phase** | Day 0 — awaiting `/lfe-extract-domain` (no mission in flight) |
 | **Coordination Files** | 01 ⬜  02 ⬜  03 ⬜  plan ⬜  plan_critique ⬜  build ⬜  tdd ⬜  critique ⬜  inspect ⬜  *(clean)* |
 | **Session Count** | 0 |
 | **Last Architecture Sweep** | none yet (fresh starter) |
 | **Authorized Scope** | (none) |
+
+## 📜 Recent Missions (max 3 — full history: [.docs/quality/CHANGELOG.md](.docs/quality/CHANGELOG.md) → [.docs/archive/changelog-history.md](.docs/archive/changelog-history.md))
+- (none yet — the Archivist's verify-then-trim demotes each closed mission to one pointer line here) → CHANGELOG
 
 ---
 
@@ -44,9 +49,16 @@
 
 ---
 
-## 🧭 Navigation
-- **Floor Map**: [.docs/README.md](.docs/README.md)
-- **Protocol**: [.docs/protocol/](.docs/protocol/)
-- **User Manual**: [USER_MANUAL.md](USER_MANUAL.md) *(installation · usage · editing the framework's skills)*
-- **Domain Glossary**: [CONTEXT.md](CONTEXT.md) *(intentionally absent on a fresh clone; populated by `/lfe-extract-domain`)*
-- **What's Next**: Run `/lfe-whats-next` for instant orientation
+## 🧭 Navigation — where what lives
+| Looking for… | Go to |
+| :--- | :--- |
+| Full mission history (per-session narratives, gates) | [.docs/quality/CHANGELOG.md](.docs/quality/CHANGELOG.md) (last 7) → [.docs/archive/changelog-history.md](.docs/archive/changelog-history.md) (all) |
+| Product architecture decisions | [.docs/architecture/architecture-decisions.md](.docs/architecture/architecture-decisions.md) *(starts at ADR 1 for your product)* |
+| Framework substrate decisions | [.docs/architecture/framework-decisions.md](.docs/architecture/framework-decisions.md) *(read-only history, ADR 81+)* |
+| Open bugs / advisories / carried follow-ups | [.docs/quality/known-issues.md](.docs/quality/known-issues.md) |
+| Domain truth & canonical terms | `.docs/domain/` · `CONTEXT.md` *(absent on a fresh clone; populated by `/lfe-extract-domain`)* |
+| LFE-FORCE bypass log | [.docs/quality/PROTOCOL_DEBT.md](.docs/quality/PROTOCOL_DEBT.md) |
+| Mid-mission work products (crash recovery) | `.plans/` coordination files — resume ladder: [.docs/protocol/LOOP_ARCHITECTURE.md](.docs/protocol/LOOP_ARCHITECTURE.md) §4 |
+| Pre-trim entrance-card history (forensics) | git history of `pipeline_status.md` |
+| Operator manual | [USER_MANUAL.md](USER_MANUAL.md) *(installation · usage · editing the framework's skills)* |
+| Everything else | [.docs/README.md](.docs/README.md) (Floor Map) · `/lfe-whats-next` for instant orientation |

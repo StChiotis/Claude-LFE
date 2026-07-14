@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "node tests/run-tests.mjs",
+    "check:entrance-card": "node scripts/check-entrance-card.mjs",
     "sync:lfe-skills": "node scripts/sync-claude-skills.mjs",
     "sync:lfe-skills:check": "node scripts/sync-claude-skills.mjs --check",
     "postinstall": "node scripts/setup-git-hooks.mjs"

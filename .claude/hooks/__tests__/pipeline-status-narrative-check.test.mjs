@@ -184,3 +184,49 @@ describe('scanForPersonalPaths (pure)', () => {
     assert.match(f[0].label, /macOS/);
   });
 });
+
+// --- ADR 103 budget-guard lane -------------------------------------------------
+// The hook gains a second, independent warn lane: entrance-card budget (>10k
+// chars, CRLF-normalized). Posture unchanged — ALWAYS exit 0, warn-only stderr.
+
+describe('narrative-guard: entrance-card budget warn lane (ADR 103)', () => {
+  const bigCard = (n) => `# card\n| **Active Mission** | ok |\n<!-- ${'x'.repeat(n)} -->\n`;
+
+  test('over 10k chars → budget warning + exit 0 (write not blocked)', async () => {
+    const res = await run(`${PROJ}/pipeline_status.md`, bigCard(11_000));
+    assert.equal(res.exitCode, 0);
+    assert.match(res.stderr, /budget-guard/);
+    assert.match(res.stderr, /ADR 103/);
+    assert.equal(res.stdout, '');
+  });
+
+  test('under 10k chars → silent (no budget warning)', async () => {
+    const res = await run(`${PROJ}/pipeline_status.md`, bigCard(1_000));
+    assert.equal(res.exitCode, 0);
+    assert.equal(res.stderr, '');
+  });
+
+  test('CRLF and LF encodings report the same normalized length', async () => {
+    const lf = bigCard(11_000);
+    const crlf = lf.replace(/\n/g, '\r\n');
+    const a = await run(`${PROJ}/pipeline_status.md`, lf);
+    const b = await run(`${PROJ}/pipeline_status.md`, crlf);
+    const lenOf = (r) => r.stderr.match(/budget-guard: (\d+) chars/)?.[1];
+    assert.ok(lenOf(a), 'LF warning carries a length');
+    assert.equal(lenOf(a), lenOf(b));
+  });
+
+  test('budget lane composes with the personal-path lane (both fire, still exit 0)', async () => {
+    const card = `# card\n| **Active Mission** | leak /home/carol/work here |\n<!-- ${'x'.repeat(11_000)} -->\n`;
+    const res = await run(`${PROJ}/pipeline_status.md`, card);
+    assert.equal(res.exitCode, 0);
+    assert.match(res.stderr, /personal\/dev-local path shape/);
+    assert.match(res.stderr, /budget-guard/);
+  });
+
+  test('budget lane ignores non-card writes (scope guard intact)', async () => {
+    const res = await run(`${PROJ}/.docs/quality/CHANGELOG.md`, bigCard(50_000));
+    assert.equal(res.exitCode, 0);
+    assert.equal(res.stderr, '');
+  });
+});

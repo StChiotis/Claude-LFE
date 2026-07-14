@@ -606,3 +606,58 @@ test('main — .session-id write failure does NOT break orientation (fail-safe)'
   });
   assert.ok(text.includes('/lfe-boot')); // no throw; context still returned
 });
+
+// ─── ADR 103 over-budget boot banner ─────────────────────────────────────────
+// render() gains an OPTIONAL third param (cardChars); absent = byte-identical
+// output (backward-compat by construction — every pre-existing call site).
+
+test('render appends the over-budget banner when cardChars exceeds the warn threshold', () => {
+  const e = parseEntranceCard(SAMPLE_CARD);
+  const c = classifyState(e, []);
+  const out = render(e, c, 11_234);
+  assert.match(out, /Entrance card over budget \(11k\/12k hard\)/);
+});
+
+test('render omits the banner at or under the threshold (strict >)', () => {
+  const e = parseEntranceCard(SAMPLE_CARD);
+  const c = classifyState(e, []);
+  assert.doesNotMatch(render(e, c, 9_999), /over budget/);
+  assert.doesNotMatch(render(e, c, 10_000), /over budget/);
+});
+
+test('render without the third param stays byte-identical (backward-compat)', () => {
+  const e = parseEntranceCard(SAMPLE_CARD);
+  const c = classifyState(e, []);
+  assert.equal(render(e, c), render(e, c, undefined));
+  assert.doesNotMatch(render(e, c), /over budget/);
+});
+
+test('over-budget banner respects the 400-char additionalContext cap', () => {
+  const e = parseEntranceCard(SAMPLE_CARD);
+  const c = classifyState(e, []);
+  const out = render(e, c, 999_999);
+  assert.ok(out.length <= 400, `render output ${out.length} chars > 400 cap`);
+});
+
+test('main() threads the real card length through to the banner (CRLF-normalized)', async () => {
+  const bigCard = SAMPLE_CARD + `\n<!-- ${'x'.repeat(11_000)} -->`;
+  const text = await main({
+    projectDir: '/proj',
+    readFileText: async () => bigCard,
+    listPlansFn: async () => [],
+    writeFileText: null,
+    sessionId: null,
+  });
+  assert.match(text, /over budget/);
+});
+
+test('main() under budget emits no banner (baseline path unchanged)', async () => {
+  const text = await main({
+    projectDir: '/proj',
+    readFileText: async () => SAMPLE_CARD,
+    listPlansFn: async () => [],
+    writeFileText: null,
+    sessionId: null,
+  });
+  assert.doesNotMatch(text, /over budget/);
+});

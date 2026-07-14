@@ -25,3 +25,4 @@
 
 node scripts/sync-claude-skills.mjs --check || exit $?
 node .claude/lib/skill-eval-gate.mjs || exit $?
+node scripts/check-entrance-card.mjs || exit $?

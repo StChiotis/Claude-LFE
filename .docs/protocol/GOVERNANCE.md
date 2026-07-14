@@ -37,7 +37,7 @@ To prevent "Spaghetti Decay" and context window bloat:
 2. **The Rolling Window**: Stale history in `CHANGELOG.md` or mission logs must be moved to `.docs/archive/` periodically.
 3. **Implicit Confidence**: No file should exist in the repository that is not indexed or referenced in the Library System.
 4. **Architecture Sweeps**: Scheduled every 5 sessions via session count in `pipeline_status.md`. Triggers `/lfe-hygiene` → `/lfe-improve-architecture`.
-5. **Atomic Docs**: Any documentation file exceeding ~6,000 characters (~1,500 tokens) must be split into smaller atomic files to preserve context window economics. *(Exemption: Root-level orchestration files like `README.md` and `LLM_AGENT_GUIDE.md` are exempt from this rule to preserve cohesive onboarding).*
+5. **Atomic Docs**: Any documentation file exceeding ~6,000 characters (~1,500 tokens) must be split into smaller atomic files to preserve context window economics. *(Exemption: the root-level orchestration files `README.md` and `LLM_AGENT_GUIDE.md` — a **closed list**; additions require an ADR — are exempt from this rule to preserve cohesive onboarding. `pipeline_status.md` is **not** exempt: it is governed by the stricter Entrance-card contract budget — see `framework-decisions.md` ADR 103.)*
 
 ---
 
@@ -53,6 +53,7 @@ Sessions are the unit of time across LFE — not calendar months. Each retention
 | `.docs/quality/skill-eval-scorecard.md` | 15 most recent eval sessions | `.docs/archive/skill-eval-scorecard-history.md` | At hygiene sweep |
 | `.docs/quality/PROTOCOL_DEBT.md` | All `open` entries; `resolved` kept 1 hygiene cycle then archived | `.docs/archive/protocol-debt-history.md` | At hygiene sweep |
 | `.docs/quality/known-issues.md` | All `open`; `resolved` / `won't-fix` kept 1 hygiene cycle then archived | `.docs/archive/known-issues-history.md` | At hygiene sweep |
+| `pipeline_status.md` *(Entrance card)* | Current mission only in the cells + ≤ **3** one-line pointers under `## 📜 Recent Missions`; ≤ **12,000 chars** hard / > **10,000** warn, counted after `\r\n → \n` normalization *(framework defaults — see Project tunability)* | The CHANGELOG lane — the Archivist's own Step 3 writes every mission's full narrative to `CHANGELOG.md` → `changelog-history.md`; the card carries pointers only | **Every Archivist close** — verify-then-trim (`lfe-archivist` Step 6): confirm the milestone exists (append it FIRST if missing), demote the prior mission to one pointer line, drop pointers beyond 3. The Hygiene sweep walks this row as the every-5-sessions backstop. Enforced by `scripts/check-entrance-card.mjs` (pre-commit, hard) + warn-tier hooks (ADR 103). |
 | `.plans/` *(coordination)* | Until mission complete; archivist clears at end-of-mission | N/A | At end-of-mission |
 
 ### Index discipline (mandatory)
